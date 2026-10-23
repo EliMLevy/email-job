@@ -64,8 +64,7 @@ export function endDay() {
 export function startNextDay() {
   state.day++;
   state.minutes = DAY_START;
-  state.emails = [];
-  state.sent = [];
+  // The inbox and Sent carry over — only tasks and phish clicks reset.
   state.tasks = [];
   state.phishClicks = 0;
   state.openEmail = null;

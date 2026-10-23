@@ -27,6 +27,7 @@ export function renderList() {
   $("listEmpty").classList.toggle("hidden", rows.length > 0);
   $("emailList").innerHTML = rows
     .map((e) => {
+      const when = e.day === state.day ? fmtTime(e.minutes) : `Day ${e.day}`;
       if (isInbox) {
         const snippet = e.body.split("\n").filter(Boolean)[1] || e.body.split("\n")[0] || "";
         const tag = e.external ? `<span class="ext-tag">[External Sender]</span> ` : "";
@@ -34,14 +35,14 @@ export function renderList() {
           `<li class="email-row ${e.read ? "" : "unread"}" data-email-id="${e.id}">` +
           `<span class="row-from">${esc(e.from.name)}</span>` +
           `<span class="row-subject">${tag}${esc(e.subject)} <span class="snippet">— ${esc(snippet)}</span></span>` +
-          `<span class="row-time">${fmtTime(e.minutes)}</span></li>`
+          `<span class="row-time">${when}</span></li>`
         );
       }
       return (
         `<li class="email-row" data-sent-id="${e.id}">` +
         `<span class="row-from">To: ${esc(e.to.name)}</span>` +
         `<span class="row-subject">${esc(e.subject)}</span>` +
-        `<span class="row-time">${fmtTime(e.minutes)}</span></li>`
+        `<span class="row-time">${when}</span></li>`
       );
     })
     .join("");
@@ -66,7 +67,7 @@ export function openInboxEmail(email) {
   $("readSubject").innerHTML =
     esc(email.subject) + (email.external ? ` <span class="ext-tag">[External Sender]</span>` : "");
   $("readFrom").textContent = `${email.from.name} <${email.from.email}>`;
-  $("readTime").textContent = fmtTime(email.minutes);
+  $("readTime").textContent = `${fmtTime(email.minutes)} · Day ${email.day}`;
   $("readBody").textContent = email.body;
   renderLure(email);
   const banner = $("taskBanner");
@@ -134,7 +135,7 @@ export function openSentEmail(email) {
   $("readView").classList.remove("hidden");
   $("readSubject").textContent = email.subject;
   $("readFrom").textContent = `To: ${email.to.name} <${email.to.email}>`;
-  $("readTime").textContent = fmtTime(email.minutes);
+  $("readTime").textContent = `${fmtTime(email.minutes)} · Day ${email.day}`;
   $("readBody").textContent = email.body;
   $("taskBanner").classList.add("hidden");
   renderSidebar();

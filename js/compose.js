@@ -51,11 +51,14 @@ export function buildComposeOptions() {
 }
 
 export function openCompose() {
+  draft.mode = "task";
+  draft.forwardOf = null;
   draft.recipient = null;
   draft.subjectTopic = null;
   draft.slots = { greeting: null, smalltalk: null, main: null, closing: null };
   draft.step = 0;
   buildComposeOptions();
+  $("composeTitle").textContent = "New Message";
   $("toInput").value = "";
   $("toInput").classList.remove("hidden");
   $("toChip").classList.add("hidden");
@@ -65,6 +68,26 @@ export function openCompose() {
   renderSlot();
   updateSendState();
   $("toInput").focus();
+}
+
+/** Reply: compose pre-addressed to the sender, subject locked to "Re: …". */
+export function openReply(email) {
+  openCompose();
+  draft.mode = "reply";
+  $("composeTitle").textContent = "Reply";
+  draft.subjectTopic = `Re: ${email.subject}`;
+  $("subjectInput").value = draft.subjectTopic;
+  selectRecipient(email.from || email.to);
+}
+
+/** Forward: subject locked to "Fwd: …"; the original is appended on send. */
+export function openForward(email) {
+  openCompose();
+  draft.mode = "forward";
+  draft.forwardOf = email;
+  $("composeTitle").textContent = "Forward";
+  draft.subjectTopic = `Fwd: ${email.subject}`;
+  $("subjectInput").value = draft.subjectTopic;
 }
 
 export function closeCompose() {
@@ -156,15 +179,24 @@ export function hideDropdowns() {
 }
 
 export function sendEmail() {
-  const bodyText =
+  let bodyText =
     [draft.slots.greeting, draft.slots.smalltalk, draft.slots.main, draft.slots.closing].filter(Boolean).join("\n\n") +
     `\n${SIGNATURE}`;
+  if (draft.mode === "forward" && draft.forwardOf) {
+    const orig = draft.forwardOf;
+    const fromLine = orig.from
+      ? `${orig.from.name} <${orig.from.email}>`
+      : "Alex Rivera <alex.rivera@company.com>";
+    bodyText +=
+      `\n\n---------- Forwarded message ---------\nFrom: ${fromLine}\nSubject: ${orig.subject}\n\n${orig.body}`;
+  }
   state.sent.unshift({
     id: newId(),
     to: draft.recipient,
     subject: draft.subjectTopic,
     body: bodyText,
     minutes: state.minutes,
+    day: state.day,
   });
   const task = state.tasks.find(
     (t) =>
@@ -197,6 +229,7 @@ export function initCompose() {
   });
   $("toChipX").addEventListener("click", clearRecipient);
   $("subjectInput").addEventListener("click", () => {
+    if (draft.mode !== "task") return; // reply/forward subjects are locked
     const dd = $("subjectDropdown");
     if (dd.classList.contains("hidden")) showSubjectDropdown();
     else dd.classList.add("hidden");

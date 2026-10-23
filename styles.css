@@ -86,6 +86,9 @@ button { font: inherit; cursor: pointer; }
 .attachment-chip { font: inherit; font-size: 13.5px; background: #f1f3f4; border: 1px solid #dadce0; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
 .attachment-chip:hover { background: #e8eaed; }
 .phished-warning { margin-top: 16px; background: #fce8e6; border: 1px solid #d93025; color: #a50e0e; border-radius: 8px; padding: 10px 12px; font-size: 14px; }
+.read-actions { display: flex; gap: 8px; margin-bottom: 14px; }
+.action-btn { font: inherit; font-size: 13px; background: #fff; border: 1px solid #dadce0; border-radius: 999px; padding: 6px 14px; cursor: pointer; color: #3c4043; }
+.action-btn:hover { background: #f1f3f4; }
 
 /* ---------- compose ---------- */
 .compose {

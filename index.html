@@ -30,7 +30,8 @@
         right person, pick the right subject, and build the body phrase by phrase.
         There's no task list — your inbox is all you've got. Ignore a favor for
         2 hours and the requester sends an angry follow-up. Anything still undone
-        at 5 PM becomes a citation. Pay: $250/day + $40 per task − $30 per citation.
+        at 5 PM becomes a citation. Your inbox carries over to the next day.
+        Pay: $250/day + $40 per task − $30 per citation.
         And beware emails tagged [External Sender] — phishing scams want you to
         click their links or attachments. Falling for one costs you $50.</p>
       </div>
@@ -47,6 +48,10 @@
         <button class="back-btn" id="backBtn">← Back</button>
         <h2 id="readSubject"></h2>
         <div class="read-meta"><span id="readFrom"></span> · <span id="readTime"></span></div>
+        <div class="read-actions">
+          <button class="action-btn" id="replyBtn">↩ Reply</button>
+          <button class="action-btn" id="forwardBtn">↪ Forward</button>
+        </div>
         <div class="task-banner hidden" id="taskBanner"></div>
         <div class="read-body" id="readBody"></div>
       </section>
@@ -56,7 +61,7 @@
   <!-- Compose window (Gmail-style popup) -->
   <div class="compose hidden" id="compose">
     <div class="compose-head">
-      <span>New Message</span>
+      <span id="composeTitle">New Message</span>
       <button class="compose-close" id="composeClose" title="Discard">✕</button>
     </div>
     <div class="compose-field">

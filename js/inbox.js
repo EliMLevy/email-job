@@ -27,6 +27,7 @@ export function deliver(item) {
       `Hi Alex,\n\nCould you please email ${item.target.name} about the ${item.topic.subject}? ` +
       `${item.flavor}\n\nThanks!\n${first}`,
     minutes: state.minutes,
+    day: state.day,
     read: false,
     taskId: task.id,
   });
@@ -52,6 +53,7 @@ export function deliverFollowup(task, stage) {
     subject: fill(pick(def.subjects), task),
     body: fill(pick(def.bodies), task),
     minutes: state.minutes,
+    day: state.day,
     read: false,
     taskId: task.id,
   });
@@ -84,7 +86,7 @@ export function checkFollowups() {
  */
 export function deliverNoise(item) {
   const t = item.template;
-  const base = { id: newId(), minutes: state.minutes, read: false, taskId: null, kind: item.kind };
+  const base = { id: newId(), minutes: state.minutes, day: state.day, read: false, taskId: null, kind: item.kind };
   if (item.kind === "phish") {
     state.emails.unshift({ ...base, from: t.from, subject: t.subject, body: t.body, external: true, lure: t.lure, phished: false });
   } else if (item.kind === "hi") {

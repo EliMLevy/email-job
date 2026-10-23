@@ -26,6 +26,8 @@ export const state = {
 
 /** The in-progress compose window: chosen recipient, subject, and body slots. */
 export const draft = {
+  mode: "task", // "task" (blank compose) | "reply" | "forward"
+  forwardOf: null, // the original email, when mode === "forward"
   recipient: null,
   subjectTopic: null,
   slots: { greeting: null, smalltalk: null, main: null, closing: null },
