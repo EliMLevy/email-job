@@ -316,7 +316,7 @@ export const NOISE_SCHEDULE = [555, 585, 620, 655, 690, 730, 770, 815, 860, 905,
 
 export const DAY_START = 540; // 9:00 AM
 export const DAY_END = 1020; // 5:00 PM
-export const TICK_MS = 500; // 1 game minute per real 0.5s → an 8h day ≈ 4 minutes
+export const TICK_MS = 350; // 1 game minute per real 0.35s → an 8h day ≈ 2.8 minutes
 export const BASE_PAY = 250;
 export const TASK_PAY = 40;
 export const CITATION_FEE = 30;

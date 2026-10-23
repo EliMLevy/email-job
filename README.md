@@ -51,7 +51,7 @@ python3 -m http.server 8000   # then open http://localhost:8000
 
 ## The loop
 
-- The day runs 9 AM → 5 PM (1 game minute ≈ 0.5 s). Task emails arrive on a schedule.
+- The day runs 9 AM → 5 PM (1 game minute ≈ 0.35 s, so a day takes ~2.8 minutes). Task emails arrive on a schedule.
 - There is **no task list** — the inbox is the only record. Ignore a task for
   2 hours and the requester sends an angry follow-up; at 3.5 hours, a furious one.
 - Composing is a 4-step phrase builder: greeting → corporate small talk →
