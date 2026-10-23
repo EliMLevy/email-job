@@ -21,9 +21,9 @@ const SLOTS = [
 ];
 
 /**
- * Options always include every open task's topic/phrase; the rest of the
- * (now five) slots are padded with decoys — sensible topics, bland filler,
- * and outright absurd ones.
+ * Options always include every open task's topic/phrase; the remaining
+ * slots are padded with decoys — sensible topics, bland filler, and
+ * outright absurd ones. Subjects pad to five; main phrases stay at three.
  */
 export function buildComposeOptions() {
   const open = state.tasks.filter((t) => !t.done);
@@ -42,7 +42,7 @@ export function buildComposeOptions() {
     ...ABSURD_TOPICS.map((t) => t.phrase),
   ]);
   for (const p of phrasePool) {
-    if (phrases.size >= 5) break;
+    if (phrases.size >= 3) break;
     phrases.add(p);
   }
   draft.subjectOptions = shuffle([...subjects]);
