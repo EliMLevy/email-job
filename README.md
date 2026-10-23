@@ -49,6 +49,9 @@ python3 -m http.server 8000   # then open http://localhost:8000
 - Reading an email offers **Reply** (pre-addressed, "Re:" subject) and
   **Forward** ("Fwd:" subject, original message appended) — both reuse the
   phrase-builder compose window. They don't complete tasks (yet).
+- Emails are **threaded**: opening any message shows the conversation — the
+  original on top, with your replies (and the requester's angry follow-ups)
+  stacked below it, oldest first.
 - Completing a task pays **+$40**; each task still open at 5 PM is a citation, **−$30**.
 - Daily pay is $250 base + bonuses − citations (floored at $0); your balance carries across days.
 

@@ -28,6 +28,7 @@ export const state = {
 export const draft = {
   mode: "task", // "task" (blank compose) | "reply" | "forward"
   forwardOf: null, // the original email, when mode === "forward"
+  replyTo: null, // the email being replied to, when mode === "reply"
   recipient: null,
   subjectTopic: null,
   slots: { greeting: null, smalltalk: null, main: null, closing: null },

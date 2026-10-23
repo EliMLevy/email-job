@@ -53,6 +53,7 @@ export function buildComposeOptions() {
 export function openCompose() {
   draft.mode = "task";
   draft.forwardOf = null;
+  draft.replyTo = null;
   draft.recipient = null;
   draft.subjectTopic = null;
   draft.slots = { greeting: null, smalltalk: null, main: null, closing: null };
@@ -74,6 +75,7 @@ export function openCompose() {
 export function openReply(email) {
   openCompose();
   draft.mode = "reply";
+  draft.replyTo = email;
   $("composeTitle").textContent = "Reply";
   draft.subjectTopic = `Re: ${email.subject}`;
   $("subjectInput").value = draft.subjectTopic;
@@ -190,8 +192,15 @@ export function sendEmail() {
     bodyText +=
       `\n\n---------- Forwarded message ---------\nFrom: ${fromLine}\nSubject: ${orig.subject}\n\n${orig.body}`;
   }
+  const sentId = newId();
   state.sent.unshift({
-    id: newId(),
+    id: sentId,
+    // A reply joins the thread of the email it answers; anything else
+    // (fresh compose, forward) starts a thread of its own.
+    threadId:
+      draft.mode === "reply" && draft.replyTo
+        ? draft.replyTo.threadId ?? draft.replyTo.id
+        : sentId,
     to: draft.recipient,
     subject: draft.subjectTopic,
     body: bodyText,

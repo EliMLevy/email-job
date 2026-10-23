@@ -6,6 +6,7 @@ import { toast } from "./ui.js";
 import { renderAll } from "./views.js";
 
 export function deliver(item) {
+  const emailId = newId();
   const task = {
     id: newId(),
     requester: item.requester,
@@ -15,12 +16,14 @@ export function deliver(item) {
     done: false,
     createdAt: state.minutes,
     requestSubject: item.subject,
+    emailId,
     nagsSent: 0,
   };
   state.tasks.push(task);
   const first = item.requester.name.split(" ")[0];
   state.emails.unshift({
-    id: newId(),
+    id: emailId,
+    threadId: emailId,
     from: item.requester,
     subject: item.subject,
     body:
@@ -49,6 +52,7 @@ export function deliverFollowup(task, stage) {
   const pick = (arr) => arr[task.id % arr.length];
   state.emails.unshift({
     id: newId(),
+    threadId: task.emailId, // follow-ups join the original request's thread
     from: task.requester,
     subject: fill(pick(def.subjects), task),
     body: fill(pick(def.bodies), task),
@@ -86,7 +90,8 @@ export function checkFollowups() {
  */
 export function deliverNoise(item) {
   const t = item.template;
-  const base = { id: newId(), minutes: state.minutes, day: state.day, read: false, taskId: null, kind: item.kind };
+  const id = newId();
+  const base = { id, threadId: id, minutes: state.minutes, day: state.day, read: false, taskId: null, kind: item.kind };
   if (item.kind === "phish") {
     state.emails.unshift({ ...base, from: t.from, subject: t.subject, body: t.body, external: true, lure: t.lure, phished: false });
   } else if (item.kind === "hi") {

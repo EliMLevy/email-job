@@ -59,19 +59,36 @@ export function renderAll() {
   }
 }
 
-export function openInboxEmail(email) {
-  email.read = true;
+/** All messages in an email's thread, oldest first. Root = the first one. */
+export function threadMessages(email) {
+  const rootId = email.threadId ?? email.id;
+  return [...state.emails, ...state.sent]
+    .filter((m) => (m.threadId ?? m.id) === rootId)
+    .sort((a, b) => a.day - b.day || a.minutes - b.minutes || a.id - b.id);
+}
+
+/**
+ * Open a conversation: the thread's root message renders as the main email,
+ * and everything after it — your replies, angry follow-ups — stacks below,
+ * like a real email thread.
+ */
+export function openThread(email) {
+  const thread = threadMessages(email);
+  const root = thread[0];
+  for (const m of thread) if (m.from) m.read = true;
   state.openEmail = email;
   $("listView").classList.add("hidden");
   $("readView").classList.remove("hidden");
   $("readSubject").innerHTML =
-    esc(email.subject) + (email.external ? ` <span class="ext-tag">[External Sender]</span>` : "");
-  $("readFrom").textContent = `${email.from.name} <${email.from.email}>`;
-  $("readTime").textContent = `${fmtTime(email.minutes)} · Day ${email.day}`;
-  $("readBody").textContent = email.body;
-  renderLure(email);
+    esc(root.subject) + (root.external ? ` <span class="ext-tag">[External Sender]</span>` : "");
+  $("readFrom").textContent = root.from
+    ? `${root.from.name} <${root.from.email}>`
+    : `To: ${root.to.name} <${root.to.email}>`;
+  $("readTime").textContent = `${fmtTime(root.minutes)} · Day ${root.day}`;
+  $("readBody").textContent = root.body;
+  renderLure(root);
   const banner = $("taskBanner");
-  const task = state.tasks.find((t) => t.id === email.taskId);
+  const task = state.tasks.find((t) => t.id === root.taskId);
   if (task) {
     banner.classList.remove("hidden");
     banner.classList.toggle("done", task.done);
@@ -81,7 +98,26 @@ export function openInboxEmail(email) {
   } else {
     banner.classList.add("hidden");
   }
+  renderThreadReplies(thread.slice(1));
   renderSidebar();
+}
+
+function renderThreadReplies(replies) {
+  $("threadReplies").innerHTML = replies
+    .map((m) => {
+      const head = m.from
+        ? `${esc(m.from.name)} · ${fmtTime(m.minutes)} · Day ${m.day}`
+        : `You → ${esc(m.to.name)} · ${fmtTime(m.minutes)} · Day ${m.day}`;
+      return (
+        `<div class="thread-reply"><div class="thread-reply-head">${head}</div>` +
+        `<div class="thread-reply-body">${esc(m.body)}</div></div>`
+      );
+    })
+    .join("");
+}
+
+export function openInboxEmail(email) {
+  openThread(email);
 }
 
 /** Phishing emails carry a clickable lure; clicked ones show the damage. */
@@ -130,15 +166,7 @@ export function handlePhishClick(email) {
 }
 
 export function openSentEmail(email) {
-  state.openEmail = email;
-  $("listView").classList.add("hidden");
-  $("readView").classList.remove("hidden");
-  $("readSubject").textContent = email.subject;
-  $("readFrom").textContent = `To: ${email.to.name} <${email.to.email}>`;
-  $("readTime").textContent = `${fmtTime(email.minutes)} · Day ${email.day}`;
-  $("readBody").textContent = email.body;
-  $("taskBanner").classList.add("hidden");
-  renderSidebar();
+  openThread(email);
 }
 
 export function closeRead() {
