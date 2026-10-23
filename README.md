@@ -36,7 +36,9 @@ python3 -m http.server 8000   # then open http://localhost:8000
 ## Progression
 
 - **Day 1** opens with a welcome dialog. The team keeps requests to a
-  minimum: 4 task emails on a slower schedule, and only a taste of noise.
+  minimum: 4 task emails on a slower schedule — while all 8 teammates send
+  personal introduction emails across the day, plus one phishing scam and
+  one announcement.
 - **Day 2+** is the full pace: 8 task emails and the full noise mix.
 - At each day's end you choose: **"I'm ready for more responsibility!"**
   (unlock the next task type) or **stay at your current level**. Unlocks, in
@@ -57,7 +59,7 @@ python3 -m http.server 8000   # then open http://localhost:8000
   decoys — sensible, bland, and absurd ("Werewolf Attack", "Ceiling Bees", …).
 - The inbox also gets **noise**: phishing scams (tagged `[External Sender]`,
   with clickable links/attachments — clicking one costs **−$50**), teammates
-  just saying hi, and satirical corporate announcements.
+  just saying hi, and satirical corporate announcements (at least 6 a day).
 - The inbox and Sent **carry over between days** — only tasks and phishing
   clicks reset. Old emails show "Day N" instead of a time in the list.
 - Reading an email offers **Reply** (pre-addressed, "Re:" subject) and

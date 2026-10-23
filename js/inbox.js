@@ -157,7 +157,7 @@ export function deliverNoise(item) {
   const base = { id, threadId: id, minutes: state.minutes, day: state.day, read: false, taskId: null, kind: item.kind };
   if (item.kind === "phish") {
     state.emails.unshift({ ...base, from: t.from, subject: t.subject, body: t.body, external: true, lure: t.lure, phished: false });
-  } else if (item.kind === "hi") {
+  } else if (item.kind === "hi" || item.kind === "intro") {
     state.emails.unshift({
       ...base,
       from: item.from,

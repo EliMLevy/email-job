@@ -110,8 +110,6 @@ export const FLAVOR = [
 export const SCHEDULE = [550, 600, 650, 700, 785, 840, 910, 960];
 // Day 1 is gentler: fewer requests, later start, more spread out.
 export const DAY1_SCHEDULE = [600, 690, 790, 890];
-export const NOISE_SCHEDULE_DAY1 = [580, 730, 880];
-
 // --- Progression -----------------------------------------------------------
 // Level 1: email one person about a topic. Level 2: + group emails.
 // Level 3: + forward-the-information tasks.
@@ -243,10 +241,78 @@ export const ANNOUNCEMENTS = [
     subject: "New Core Value Unlocked: Humility",
     body: "We are thrilled to announce Humility as our 14th core value. Please update your email signatures by EOD. Anyone not displaying all 14 values will be coached on humility.\n\n— Corporate Communications",
   },
+  {
+    from: { name: "People Team", email: "people@company.com" },
+    subject: "Mandatory Webinar: 'Webinars: Best Practices'",
+    body: "All staff must attend Thursday's webinar on webinar best practices. Attendance will be taken twice: once at the start, and once when you least expect it.\n\n— The People Team",
+  },
+  {
+    from: { name: "Facilities", email: "facilities@company.com" },
+    subject: "Fridge Cleanup Friday",
+    body: "This Friday the break-room fridge will be cleaned. All unlabeled items will be discarded. All labeled items will also be discarded, but with respect.\n\n— Facilities",
+  },
+  {
+    from: { name: "Office of the CEO", email: "ceo-office@company.com" },
+    subject: "CEO's Podcast — Episode 47 Now Live",
+    body: "Episode 47 of the CEO's podcast, 'Thoughts on Leadership (Mine)', is now live. Listening is voluntary. Quoting it in meetings is encouraged, and noticed.\n\n— Office of the CEO",
+  },
+  {
+    from: { name: "Corporate Communications", email: "comms@company.com" },
+    subject: "Quarterly Values Alignment Survey",
+    body: "Please complete the quarterly Values Alignment Survey by Friday. The survey is fully anonymous. Your manager will receive your individual results.\n\n— Corporate Communications",
+  },
 ];
 
+// Day 1 only: your new teammates introduce themselves, one by one.
+// Keyed to the cast by name; the sender is resolved at planning time.
+export const INTRO_EMAILS = [
+  {
+    name: "Rachel Donovan",
+    subject: "Welcome aboard! 👋",
+    body: "Hi Alex, I'm Rachel — office manager, keeper of the supply-closet keys, and the person who actually knows how anything gets done here. If you need something, I'm your first call.\n\nOne word of advice: the good pens are in my desk. They must be earned.",
+  },
+  {
+    name: "Janet Park",
+    subject: "Intro: your friendly events person",
+    body: "Hi!! I'm Janet, events coordinator. I plan the office parties, the offsites, and at least one annual retreat that is legally distinct from a party.\n\nThere will be many celebrations. Attendance is a joy, and also tracked. I can't wait for you to experience your first Mandatory Fun!",
+  },
+  {
+    name: "Marcus Lee",
+    subject: "Marcus Lee — Sales",
+    body: "Alex. Marcus, sales lead. I talk loudly on the phone and I'm not sorry — when my deals close, we all eat.\n\nIf you hear someone yell 'LET'S GO' at 9 AM, that's me. Welcome to the team.",
+  },
+  {
+    name: "Priya Nair",
+    subject: "Welcome from HR",
+    body: "Welcome, Alex! I'm Priya, from HR (the People Team). My door is always open — metaphorically. Please do knock; it's physically closed for focus time.\n\nIf anything ever feels off, come talk to me. That's what I'm here for. Also, please complete your onboarding forms.",
+  },
+  {
+    name: "Tom Becker",
+    subject: "IT says hi (please read)",
+    body: "Hey. Tom, IT support. Have you tried turning it off and on again? That's most of my job and, frankly, my whole introduction.\n\nOne serious thing: don't click weird links or open sketchy attachments. If an email looks off, it probably is. I do not want to rebuild your laptop. Again. (You're new — the 'again' is preemptive.)",
+  },
+  {
+    name: "Sarah Kim",
+    subject: "Hello from Marketing!",
+    body: "Hi Alex! Sarah, marketing associate. I make the decks, the one-pagers, and the decks about the one-pagers.\n\nIf you ever need something to look 40% more synergistic by EOD, I am absolutely your person. Welcome!",
+  },
+  {
+    name: "David Ortiz",
+    subject: "Finance introduction",
+    body: "Hello Alex. David, finance analyst. I review the expense reports, so a word to the wise: label your receipts, all of them, always.\n\nI have seen things in those reports that cannot be unseen. Let's not add to them. Welcome aboard.",
+  },
+  {
+    name: "Emily Chen",
+    subject: "Hi from Design 🎨",
+    body: "Hey! Emily, product designer. Fair warning: I will have opinions about your slide fonts, your spacing, and possibly your kerning. It's nothing personal — it's design.\n\nExcited to work with you. Welcome to Initech!",
+  },
+];
+
+// When the introductions land on day 1 (spread across the whole day).
+export const INTRO_SCHEDULE_DAY1 = [545, 610, 665, 715, 770, 845, 915, 970];
+
 // Minutes after midnight when noise emails land (interleaved with tasks).
-export const NOISE_SCHEDULE = [565, 620, 675, 725, 800, 865, 935];
+export const NOISE_SCHEDULE = [555, 585, 620, 655, 690, 730, 770, 815, 860, 905, 950];
 
 export const DAY_START = 540; // 9:00 AM
 export const DAY_END = 1020; // 5:00 PM

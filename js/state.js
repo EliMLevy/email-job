@@ -2,8 +2,8 @@
 // Everything else imports state from here rather than keeping its own copy.
 import {
   CONTACTS, TOPICS, REQUEST_SUBJECTS, FLAVOR, SCHEDULE, DAY1_SCHEDULE, DAY_START,
-  PHISH_EMAILS, HI_EMAILS, ANNOUNCEMENTS, NOISE_SCHEDULE, NOISE_SCHEDULE_DAY1,
-  INFO_ITEMS, FORWARD_REASONS,
+  PHISH_EMAILS, HI_EMAILS, ANNOUNCEMENTS, NOISE_SCHEDULE,
+  INFO_ITEMS, FORWARD_REASONS, INTRO_EMAILS, INTRO_SCHEDULE_DAY1,
 } from "./data.js";
 import { shuffle } from "./utils.js";
 
@@ -92,11 +92,27 @@ export function planDay() {
   planNoise();
 }
 
-/** Today's noise. Day 1 gets a taste; from day 2 it's 3 phish / 2 hi / 2 announcements. */
+/**
+ * Today's noise. Day 1: the whole team introduces themselves across the day,
+ * plus one phishing scam and one announcement. From day 2: 3 phishing,
+ * 2 hi emails, and at least 6 corporate announcements.
+ */
 export function planNoise() {
-  const day1 = state.day === 1;
-  const counts = day1 ? { phish: 1, hi: 1, ann: 1 } : { phish: 3, hi: 2, ann: 2 };
-  const times = day1 ? NOISE_SCHEDULE_DAY1 : NOISE_SCHEDULE;
+  if (state.day === 1) {
+    const intros = shuffle(INTRO_EMAILS).map((template, i) => ({
+      kind: "intro",
+      template,
+      from: CONTACTS.find((c) => c.name === template.name),
+      minutes: INTRO_SCHEDULE_DAY1[i],
+    }));
+    state.noise = [
+      ...intros,
+      { kind: "phish", template: shuffle(PHISH_EMAILS)[0], minutes: 730 },
+      { kind: "announcement", template: shuffle(ANNOUNCEMENTS)[0], minutes: 880 },
+    ].sort((a, b) => a.minutes - b.minutes);
+    return;
+  }
+  const counts = { phish: 3, hi: 2, ann: 6 };
   const items = [
     ...shuffle(PHISH_EMAILS).slice(0, counts.phish).map((template) => ({ kind: "phish", template })),
     ...shuffle(HI_EMAILS)
@@ -104,6 +120,6 @@ export function planNoise() {
       .map((template) => ({ kind: "hi", template, from: CONTACTS[Math.floor(Math.random() * CONTACTS.length)] })),
     ...shuffle(ANNOUNCEMENTS).slice(0, counts.ann).map((template) => ({ kind: "announcement", template })),
   ];
-  state.noise = shuffle(items).map((item, i) => ({ ...item, minutes: times[i] }));
+  state.noise = shuffle(items).map((item, i) => ({ ...item, minutes: NOISE_SCHEDULE[i] }));
   state.noise.sort((a, b) => a.minutes - b.minutes);
 }
