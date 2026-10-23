@@ -1,9 +1,9 @@
 // The compose window — the core mechanic. The player picks a recipient
 // (autocomplete), a subject (option list), and builds the body phrase by
-// phrase (greeting → main point → closing). Sending completes a task only
-// when recipient + subject + main phrase all match an open task.
+// phrase (greeting → small talk → main point → closing). Sending completes
+// a task only when recipient + subject + main phrase all match an open task.
 import { state, draft, newId } from "./state.js";
-import { CONTACTS, TOPICS, DISTRACTOR_PHRASES, CLOSINGS, SIGNATURE, TASK_PAY } from "./data.js";
+import { CONTACTS, TOPICS, DISTRACTOR_PHRASES, ABSURD_TOPICS, SMALL_TALK, CLOSINGS, SIGNATURE, TASK_PAY } from "./data.js";
 import { $, esc, shuffle } from "./utils.js";
 import { toast } from "./ui.js";
 import { renderAll } from "./views.js";
@@ -15,31 +15,45 @@ function greetingOptions() {
 
 const SLOTS = [
   { key: "greeting", label: "Step 1 · Choose a greeting", options: () => greetingOptions() },
-  { key: "main", label: "Step 2 · Choose the main point", options: () => draft.mainOptions },
-  { key: "closing", label: "Step 3 · Choose a closing", options: () => CLOSINGS },
+  { key: "smalltalk", label: "Step 2 · Corporate small talk", options: () => draft.smallTalkOptions },
+  { key: "main", label: "Step 3 · Choose the main point", options: () => draft.mainOptions },
+  { key: "closing", label: "Step 4 · Choose a closing", options: () => CLOSINGS },
 ];
 
-/** Options always include every open task's topic/phrase, padded with decoys. */
+/**
+ * Options always include every open task's topic/phrase; the rest of the
+ * (now five) slots are padded with decoys — sensible topics, bland filler,
+ * and outright absurd ones.
+ */
 export function buildComposeOptions() {
   const open = state.tasks.filter((t) => !t.done);
   const subjects = new Set(open.map((t) => t.topic));
-  for (const t of shuffle(TOPICS)) {
-    if (subjects.size >= 4) break;
-    subjects.add(t.subject);
+  const subjectPool = shuffle([
+    ...TOPICS.map((t) => t.subject),
+    ...ABSURD_TOPICS.map((t) => t.subject),
+  ]);
+  for (const s of subjectPool) {
+    if (subjects.size >= 5) break;
+    subjects.add(s);
   }
   const phrases = new Set(open.map((t) => t.phrase));
-  for (const p of shuffle(DISTRACTOR_PHRASES)) {
-    if (phrases.size >= 4) break;
+  const phrasePool = shuffle([
+    ...DISTRACTOR_PHRASES,
+    ...ABSURD_TOPICS.map((t) => t.phrase),
+  ]);
+  for (const p of phrasePool) {
+    if (phrases.size >= 5) break;
     phrases.add(p);
   }
   draft.subjectOptions = shuffle([...subjects]);
   draft.mainOptions = shuffle([...phrases]);
+  draft.smallTalkOptions = shuffle(SMALL_TALK).slice(0, 4);
 }
 
 export function openCompose() {
   draft.recipient = null;
   draft.subjectTopic = null;
-  draft.slots = { greeting: null, main: null, closing: null };
+  draft.slots = { greeting: null, smalltalk: null, main: null, closing: null };
   draft.step = 0;
   buildComposeOptions();
   $("toInput").value = "";
@@ -59,7 +73,7 @@ export function closeCompose() {
 }
 
 export function renderBodyPreview() {
-  const parts = [draft.slots.greeting, draft.slots.main, draft.slots.closing].filter(Boolean);
+  const parts = [draft.slots.greeting, draft.slots.smalltalk, draft.slots.main, draft.slots.closing].filter(Boolean);
   $("bodyPreview").innerHTML = parts.length
     ? esc(parts.join("\n\n") + (draft.slots.closing ? `\n${SIGNATURE}` : ""))
     : `<span class="body-placeholder">Your email will appear here as you choose phrases…</span>`;
@@ -143,7 +157,7 @@ export function hideDropdowns() {
 
 export function sendEmail() {
   const bodyText =
-    [draft.slots.greeting, draft.slots.main, draft.slots.closing].filter(Boolean).join("\n\n") +
+    [draft.slots.greeting, draft.slots.smalltalk, draft.slots.main, draft.slots.closing].filter(Boolean).join("\n\n") +
     `\n${SIGNATURE}`;
   state.sent.unshift({
     id: newId(),
@@ -206,7 +220,7 @@ export function initCompose() {
     updateSendState();
   });
   $("slotReset").addEventListener("click", () => {
-    draft.slots = { greeting: null, main: null, closing: null };
+    draft.slots = { greeting: null, smalltalk: null, main: null, closing: null };
     draft.step = 0;
     renderBodyPreview();
     renderSlot();

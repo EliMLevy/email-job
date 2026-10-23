@@ -1,4 +1,4 @@
-// Rendering: header (clock/balance), sidebar (folders + open tasks),
+// Rendering: header (clock/balance), sidebar (folders + unread badge),
 // the email list, and the reading view. Owns the list/read navigation wiring.
 import { state } from "./state.js";
 import { $, esc, fmtTime } from "./utils.js";
@@ -12,16 +12,6 @@ export function renderHeader() {
 export function renderSidebar() {
   const unread = state.emails.filter((e) => !e.read).length;
   $("unreadBadge").textContent = unread || "";
-  const open = state.tasks.filter((t) => !t.done);
-  $("taskBadge").textContent = open.length || "";
-  $("tasksEmpty").classList.toggle("hidden", open.length > 0);
-  $("taskList").innerHTML = open
-    .map(
-      (t) =>
-        `<li>Email <strong>${esc(t.target.name)}</strong> about <strong>“${esc(t.topic)}”</strong>` +
-        `<div class="task-sub">requested by ${esc(t.requester.name)}</div></li>`
-    )
-    .join("");
   document.querySelectorAll(".folder").forEach((f) =>
     f.classList.toggle("active", f.dataset.view === state.view && !state.openEmail)
   );

@@ -37,6 +37,53 @@ export const DISTRACTOR_PHRASES = [
   "Our quarterly newsletter is now available on the intranet, if you'd like to take a look.",
 ];
 
+// Absurd subjects + phrases that show up as decoys. Choosing one sends a
+// very memorable email — it just doesn't complete anyone's task.
+export const ABSURD_TOPICS = [
+  { subject: "Volcanic Eruption", phrase: "A volcano has erupted near the office and lava is slowly approaching the parking lot." },
+  { subject: "Werewolf Attack", phrase: "There has been a werewolf attack on the third floor — please avoid the stairwell until further notice." },
+  { subject: "Explosive Diarrhea", phrase: "I am writing to report a severe case of explosive diarrhea in the second-floor bathroom. Send help." },
+  { subject: "Haunted Printer", phrase: "The printer on floor 3 is definitely haunted. It only prints ominous warnings now." },
+  { subject: "Alien Abduction", phrase: "Gary from accounting was abducted by aliens this morning and will not be joining standup." },
+  { subject: "Office Goat", phrase: "A goat has gotten into the office and eaten the Q3 reports. Nobody knows where it came from." },
+  { subject: "Mime Infestation", phrase: "We have a mime infestation in the break room. They are trapped in boxes and cannot leave. Or can they?" },
+  { subject: "Ceiling Bees", phrase: "There are bees in the ceiling again. Thousands of them. Please work from home." },
+];
+
+// Weirdly corporate small talk — a required stop in every email you send.
+export const SMALL_TALK = [
+  "How was your weekend?",
+  "I hope everything is going well with you.",
+  "Ugh, Mondays, am I right?",
+  "Hope you had a chance to recharge!",
+  "Can you believe this weather lately?",
+  "Per my last email — just kidding. Unless…?",
+  "Let's take this offline sometime.",
+  "Living the dream over here, as always.",
+];
+
+// Escalating follow-ups the requester sends while a task sits undone.
+// {target} = full name, {topic} = the task's topic, {first} = requester's
+// first name, {subject} = the original request email's subject.
+export const FOLLOWUP_STAGES = [
+  {
+    after: 120, // 2 hours
+    subjects: ["Re: {subject}", "Following up…", "Checking in (again)"],
+    bodies: [
+      "Hi Alex,\n\nIt's been over two hours — have you emailed {target} about the {topic} yet? I kind of need this done today.\n\nThanks (again),\n{first}",
+      "Hi Alex,\n\nJust circling back: the {topic} email to {target} still hasn't gone out. Please take care of it before the day ends.\n\n{first}",
+    ],
+  },
+  {
+    after: 210, // 3.5 hours
+    subjects: ["URGENT — Re: {subject}", "FINAL WARNING", "???"],
+    bodies: [
+      "ALEX. It has been over three hours. PLEASE email {target} about the {topic}. There is a citation with your name on it at 5 PM and I cannot stop it.\n\n— {first} (extremely disappointed)",
+      "This is my final follow-up. {target}. {topic}. EMAIL. TODAY.\n\n— {first}",
+    ],
+  },
+];
+
 export const CLOSINGS = [
   "Thanks so much!",
   "Let me know if you have any questions.",

@@ -23,10 +23,11 @@ export const state = {
 export const draft = {
   recipient: null,
   subjectTopic: null,
-  slots: { greeting: null, main: null, closing: null },
+  slots: { greeting: null, smalltalk: null, main: null, closing: null },
   step: 0,
   subjectOptions: [],
   mainOptions: [],
+  smallTalkOptions: [],
 };
 
 /** Build today's delivery schedule: who's asking whom about what, and when. */

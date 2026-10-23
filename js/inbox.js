@@ -1,5 +1,7 @@
-// Inbox deliveries: a scheduled plan item becomes an email + an open task.
+// Inbox deliveries: a scheduled plan item becomes an email + an open task,
+// and an ignored task earns its requester's escalating follow-up emails.
 import { state, newId } from "./state.js";
+import { FOLLOWUP_STAGES } from "./data.js";
 import { toast } from "./ui.js";
 import { renderAll } from "./views.js";
 
@@ -11,6 +13,9 @@ export function deliver(item) {
     topic: item.topic.subject,
     phrase: item.topic.phrase,
     done: false,
+    createdAt: state.minutes,
+    requestSubject: item.subject,
+    nagsSent: 0,
   };
   state.tasks.push(task);
   const first = item.requester.name.split(" ")[0];
@@ -27,4 +32,48 @@ export function deliver(item) {
   });
   toast(`📬 New email from ${item.requester.name}`);
   renderAll();
+}
+
+function fill(template, task) {
+  return template
+    .replaceAll("{target}", task.target.name)
+    .replaceAll("{topic}", task.topic)
+    .replaceAll("{first}", task.requester.name.split(" ")[0])
+    .replaceAll("{subject}", task.requestSubject);
+}
+
+/** The requester loses patience: send follow-up #stage for an open task. */
+export function deliverFollowup(task, stage) {
+  const def = FOLLOWUP_STAGES[stage];
+  const pick = (arr) => arr[task.id % arr.length];
+  state.emails.unshift({
+    id: newId(),
+    from: task.requester,
+    subject: fill(pick(def.subjects), task),
+    body: fill(pick(def.bodies), task),
+    minutes: state.minutes,
+    read: false,
+    taskId: task.id,
+  });
+  toast(
+    stage > 0
+      ? `😡 ${task.requester.name} is FURIOUS about the ${task.topic} email`
+      : `😠 Angry follow-up from ${task.requester.name}`,
+    stage > 0 ? "bad" : ""
+  );
+  renderAll();
+}
+
+/** Send any follow-ups whose time has come for still-open tasks. */
+export function checkFollowups() {
+  for (const task of state.tasks) {
+    if (task.done) continue;
+    while (
+      task.nagsSent < FOLLOWUP_STAGES.length &&
+      state.minutes - task.createdAt >= FOLLOWUP_STAGES[task.nagsSent].after
+    ) {
+      deliverFollowup(task, task.nagsSent);
+      task.nagsSent++;
+    }
+  }
 }

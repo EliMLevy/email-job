@@ -2,7 +2,7 @@
 import { state, planDay } from "./state.js";
 import { DAY_START, DAY_END, TICK_MS, BASE_PAY, TASK_PAY, CITATION_FEE } from "./data.js";
 import { $, esc } from "./utils.js";
-import { deliver } from "./inbox.js";
+import { deliver, checkFollowups } from "./inbox.js";
 import { renderHeader, renderAll } from "./views.js";
 import { closeCompose } from "./compose.js";
 
@@ -11,6 +11,7 @@ export function tick() {
   while (state.plan.length && state.plan[0].minutes <= state.minutes) {
     deliver(state.plan.shift());
   }
+  checkFollowups();
   renderHeader();
   if (state.minutes >= DAY_END) endDay();
 }

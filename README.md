@@ -36,6 +36,11 @@ python3 -m http.server 8000   # then open http://localhost:8000
 ## The loop
 
 - The day runs 9 AM → 5 PM (1 game minute ≈ 0.5 s). Task emails arrive on a schedule.
+- There is **no task list** — the inbox is the only record. Ignore a task for
+  2 hours and the requester sends an angry follow-up; at 3.5 hours, a furious one.
+- Composing is a 4-step phrase builder: greeting → corporate small talk →
+  main point → closing. Subject and phrase options mix the real answers with
+  decoys — sensible, bland, and absurd ("Werewolf Attack", "Ceiling Bees", …).
 - Completing a task pays **+$40**; each task still open at 5 PM is a citation, **−$30**.
 - Daily pay is $250 base + bonuses − citations (floored at $0); your balance carries across days.
 
