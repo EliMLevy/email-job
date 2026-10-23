@@ -1,15 +1,18 @@
 // The workday clock and the end-of-day reckoning: pay, citations, next day.
 import { state, planDay } from "./state.js";
-import { DAY_START, DAY_END, TICK_MS, BASE_PAY, TASK_PAY, CITATION_FEE, PHISH_FINE } from "./data.js";
+import { DAY_START, DAY_END, TICK_MS, BASE_PAY, TASK_PAY, CITATION_FEE, PHISH_FINE, MAX_LEVEL, NEXT_UNLOCK } from "./data.js";
 import { $, esc } from "./utils.js";
-import { deliver, checkFollowups, deliverNoise } from "./inbox.js";
+import { deliver, deliverInfo, deliverForwardRequest, checkFollowups, deliverNoise } from "./inbox.js";
 import { renderHeader, renderAll } from "./views.js";
 import { closeCompose } from "./compose.js";
+
+const DELIVERERS = { task: deliver, info: deliverInfo, forwardRequest: deliverForwardRequest };
 
 export function tick() {
   state.minutes++;
   while (state.plan.length && state.plan[0].minutes <= state.minutes) {
-    deliver(state.plan.shift());
+    const item = state.plan.shift();
+    DELIVERERS[item.kind](item);
   }
   while (state.noise.length && state.noise[0].minutes <= state.minutes) {
     deliverNoise(state.noise.shift());
@@ -51,12 +54,20 @@ export function endDay() {
     (open.length
       ? `<h3 style="margin:14px 0 6px">Citations</h3>` +
         open
-          .map(
-            (t) =>
-              `<p class="citation">⚠️ Citation — did not email ${esc(t.target.name)} about “${esc(t.topic)}” (requested by ${esc(t.requester.name)}).</p>`
+          .map((t) =>
+            t.type === "forward"
+              ? `<p class="citation">⚠️ Citation — did not forward “${esc(t.topic)}” to ${esc(t.requester.name)}.</p>`
+              : `<p class="citation">⚠️ Citation — did not email ${esc(t.targetsLabel)} about “${esc(t.topic)}” (requested by ${esc(t.requester.name)}).</p>`
           )
           .join("")
       : `<p class="all-clear" style="margin-top:14px">No outstanding tasks. A flawless day at the office. ☕</p>`);
+  // The responsibility choice: level up (if anything's left to unlock) or stay.
+  const next = NEXT_UNLOCK[state.level];
+  $("unlockNote").innerHTML = next
+    ? `Next responsibility: <strong>${esc(next.name)}</strong> — ${esc(next.blurb)}`
+    : "You're carrying all the responsibility there is. For now.";
+  $("moreBtn").classList.toggle("hidden", !next);
+  $("stayBtn").textContent = next ? "I'd like to continue at my current level" : "Start next day →";
   $("dayModal").classList.remove("hidden");
   renderHeader();
 }
@@ -77,5 +88,9 @@ export function startNextDay() {
 }
 
 export function initDay() {
-  $("nextDayBtn").addEventListener("click", startNextDay);
+  $("moreBtn").addEventListener("click", () => {
+    if (state.level < MAX_LEVEL) state.level++;
+    startNextDay();
+  });
+  $("stayBtn").addEventListener("click", startNextDay);
 }

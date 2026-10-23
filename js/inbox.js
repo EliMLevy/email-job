@@ -1,7 +1,8 @@
 // Inbox deliveries: a scheduled plan item becomes an email + an open task,
 // and an ignored task earns its requester's escalating follow-up emails.
 import { state, newId } from "./state.js";
-import { FOLLOWUP_STAGES } from "./data.js";
+import { FOLLOWUP_STAGES, FORWARD_REQUEST_SUBJECTS } from "./data.js";
+import { joinNames } from "./utils.js";
 import { toast } from "./ui.js";
 import { renderAll } from "./views.js";
 
@@ -9,8 +10,11 @@ export function deliver(item) {
   const emailId = newId();
   const task = {
     id: newId(),
+    type: "send",
     requester: item.requester,
     target: item.target,
+    targets: item.targets,
+    targetsLabel: joinNames(item.targets),
     topic: item.topic.subject,
     phrase: item.topic.phrase,
     done: false,
@@ -27,8 +31,67 @@ export function deliver(item) {
     from: item.requester,
     subject: item.subject,
     body:
-      `Hi Alex,\n\nCould you please email ${item.target.name} about the ${item.topic.subject}? ` +
+      `Hi Alex,\n\nCould you please email ${joinNames(item.targets)} about the ${item.topic.subject}? ` +
       `${item.flavor}\n\nThanks!\n${first}`,
+    minutes: state.minutes,
+    day: state.day,
+    read: false,
+    taskId: task.id,
+  });
+  toast(`📬 New email from ${item.requester.name}`);
+  renderAll();
+}
+
+/** Someone files information with you. Not a task — until someone asks for it. */
+export function deliverInfo(item) {
+  const emailId = newId();
+  state.infoEmails[item.pairId] = emailId;
+  state.emails.unshift({
+    id: emailId,
+    threadId: emailId,
+    from: item.from,
+    subject: item.info.subject,
+    body: item.info.body,
+    minutes: state.minutes,
+    day: state.day,
+    read: false,
+    taskId: null,
+    kind: "info",
+    info: item.info,
+  });
+  toast(`📬 New email from ${item.from.name}`);
+  renderAll();
+}
+
+/** A second person asks you to forward the info email on to them. */
+export function deliverForwardRequest(item) {
+  const emailId = newId();
+  const task = {
+    id: newId(),
+    type: "forward",
+    requester: item.requester,
+    target: item.requester,
+    targets: [item.requester],
+    targetsLabel: item.requester.name,
+    topic: item.info.label,
+    phrase: null,
+    infoEmailId: state.infoEmails[item.pairId] ?? null,
+    done: false,
+    createdAt: state.minutes,
+    requestSubject: FORWARD_REQUEST_SUBJECTS[0],
+    emailId,
+    nagsSent: 0,
+  };
+  state.tasks.push(task);
+  const first = item.requester.name.split(" ")[0];
+  state.emails.unshift({
+    id: emailId,
+    threadId: emailId,
+    from: item.requester,
+    subject: FORWARD_REQUEST_SUBJECTS[Math.floor(Math.random() * FORWARD_REQUEST_SUBJECTS.length)],
+    body:
+      `Hi Alex,\n\n${item.from.name} mentioned they sent you the ${item.info.label}. ` +
+      `Could you forward that email to me? I need it ${item.reason}.\n\nThanks!\n${first}`,
     minutes: state.minutes,
     day: state.day,
     read: false,
@@ -40,7 +103,7 @@ export function deliver(item) {
 
 function fill(template, task) {
   return template
-    .replaceAll("{target}", task.target.name)
+    .replaceAll("{target}", task.targetsLabel || task.target.name)
     .replaceAll("{topic}", task.topic)
     .replaceAll("{first}", task.requester.name.split(" ")[0])
     .replaceAll("{subject}", task.requestSubject);

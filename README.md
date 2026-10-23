@@ -33,6 +33,20 @@ python3 -m http.server 8000   # then open http://localhost:8000
 | `js/compose.js` | The compose window: recipient autocomplete, subject picker, phrase-by-phrase body builder, send + task matching |
 | `js/day.js` | The clock, end-of-day pay/citations, next-day reset |
 
+## Progression
+
+- **Day 1** opens with a welcome dialog. The team keeps requests to a
+  minimum: 4 task emails on a slower schedule, and only a taste of noise.
+- **Day 2+** is the full pace: 8 task emails and the full noise mix.
+- At each day's end you choose: **"I'm ready for more responsibility!"**
+  (unlock the next task type) or **stay at your current level**. Unlocks, in
+  order:
+  1. **Group emails** — some requests name 2–3 people; the compose window
+     accepts multiple recipient chips, and the recipient set must match exactly.
+  2. **Forwarding information** — someone sends you a file or a detail (a PDF,
+     a deadline, a code); later, someone else asks you to forward that email
+     to them. Forwarding the right email to the requester completes the task.
+
 ## The loop
 
 - The day runs 9 AM → 5 PM (1 game minute ≈ 0.5 s). Task emails arrive on a schedule.

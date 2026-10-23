@@ -22,4 +22,8 @@ $("forwardBtn").addEventListener("click", () => {
 
 planDay();
 renderAll();
-startTimer();
+// The clock doesn't start until the welcome dialog is dismissed.
+$("welcomeBtn").addEventListener("click", () => {
+  $("welcomeModal").classList.add("hidden");
+  startTimer();
+});

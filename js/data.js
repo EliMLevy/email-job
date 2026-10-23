@@ -108,6 +108,52 @@ export const FLAVOR = [
 
 // Minutes after midnight when task emails arrive (9:10 AM … 4:00 PM).
 export const SCHEDULE = [550, 600, 650, 700, 785, 840, 910, 960];
+// Day 1 is gentler: fewer requests, later start, more spread out.
+export const DAY1_SCHEDULE = [600, 690, 790, 890];
+export const NOISE_SCHEDULE_DAY1 = [580, 730, 880];
+
+// --- Progression -----------------------------------------------------------
+// Level 1: email one person about a topic. Level 2: + group emails.
+// Level 3: + forward-the-information tasks.
+export const MAX_LEVEL = 3;
+export const NEXT_UNLOCK = {
+  1: { name: "Group emails", blurb: "Requests will start asking you to email several people at once." },
+  2: { name: "Forwarding information", blurb: "People will send you files and details — and later, someone else will ask you to forward them on." },
+};
+
+// Information one person sends you, which someone else will later ask you
+// to forward. kind "pdf" renders as an attachment; "deadline"/"code" render
+// as a highlighted detail in the email body.
+export const INFO_ITEMS = [
+  {
+    label: "Q3 Report", kind: "pdf", file: "Q3_Report.pdf",
+    subject: "Q3 Report — for your records",
+    body: "Hi Alex,\n\nAttached is the Q3 report. Just filing it with you for safekeeping — no action needed.\n\nThanks!",
+  },
+  {
+    label: "Henderson Deadline", kind: "deadline", detail: "Friday, November 14 at 3:00 PM",
+    subject: "Henderson project deadline",
+    body: "Hi Alex,\n\nFor your records: the deadline for the Henderson project is Friday, November 14 at 3:00 PM. Someone will probably ask you about it eventually.\n\nCheers,",
+  },
+  {
+    label: "Guest Wi-Fi Code", kind: "code", detail: "GUEST-4821",
+    subject: "Guest wi-fi code",
+    body: "Hi Alex,\n\nThe guest wi-fi code is GUEST-4821. Keeping it with you since people always ask.\n\nThanks,",
+  },
+  {
+    label: "Offsite Budget", kind: "pdf", file: "Offsite_Budget.pdf",
+    subject: "Offsite budget doc",
+    body: "Hi Alex,\n\nAttached is the offsite budget. No action needed — just keeping you in the loop.\n\nBest,",
+  },
+  {
+    label: "Board Meeting Date", kind: "deadline", detail: "Tuesday at 10:00 AM",
+    subject: "Board meeting date — save this",
+    body: "Hi Alex,\n\nSaving this with you: the board meeting is Tuesday at 10:00 AM. Someone always needs it forwarded eventually.\n\nThanks,",
+  },
+];
+
+export const FORWARD_REQUEST_SUBJECTS = ["Can you forward something?", "Quick forward?", "Need a favor — a forward"];
+export const FORWARD_REASONS = ["for the planning meeting", "before my performance review", "for my records", "for the client call"];
 
 // ---------------------------------------------------------------------------
 // Inbox noise: emails that are NOT tasks.

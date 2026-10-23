@@ -14,6 +14,14 @@ export function shuffle(arr) {
   return a;
 }
 
+/** "A" / "A and B" / "A, B and C" from a list of contacts. */
+export function joinNames(contacts) {
+  const names = contacts.map((c) => c.name);
+  if (names.length <= 1) return names[0] || "";
+  if (names.length === 2) return `${names[0]} and ${names[1]}`;
+  return `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+}
+
 /** Minutes after midnight → "9:05 AM". */
 export function fmtTime(mins) {
   const h24 = Math.floor(mins / 60);

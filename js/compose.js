@@ -1,7 +1,9 @@
-// The compose window — the core mechanic. The player picks a recipient
-// (autocomplete), a subject (option list), and builds the body phrase by
-// phrase (greeting → small talk → main point → closing). Sending completes
-// a task only when recipient + subject + main phrase all match an open task.
+// The compose window — the core mechanic. The player picks one or more
+// recipients (autocomplete chips), a subject (option list), and builds the
+// body phrase by phrase (greeting → small talk → main point → closing).
+// Sending completes a task when the recipient set, subject, and main phrase
+// all match an open task — or, in forward mode, when the forwarded email is
+// the info someone asked for and they are among the recipients.
 import { state, draft, newId } from "./state.js";
 import { CONTACTS, TOPICS, DISTRACTOR_PHRASES, ABSURD_TOPICS, SMALL_TALK, CLOSINGS, SIGNATURE, TASK_PAY } from "./data.js";
 import { $, esc, shuffle } from "./utils.js";
@@ -9,7 +11,10 @@ import { toast } from "./ui.js";
 import { renderAll } from "./views.js";
 
 function greetingOptions() {
-  const first = draft.recipient ? draft.recipient.name.split(" ")[0] : "there";
+  if (draft.recipients.length > 1) {
+    return ["Hi everyone,", "Hi all,", "Hi team,", "Hello everyone,"];
+  }
+  const first = draft.recipients.length === 1 ? draft.recipients[0].name.split(" ")[0] : "there";
   return [`Hi ${first},`, `Hello ${first},`, `Good morning ${first},`, `Hey ${first},`];
 }
 
@@ -21,12 +26,13 @@ const SLOTS = [
 ];
 
 /**
- * Options always include every open task's topic/phrase; the remaining
+ * Options always include every open send-task's topic/phrase; the remaining
  * slots are padded with decoys — sensible topics, bland filler, and
  * outright absurd ones. Subjects pad to five; main phrases stay at three.
+ * (Forward tasks aren't offered here — they complete via Forward, not Compose.)
  */
 export function buildComposeOptions() {
-  const open = state.tasks.filter((t) => !t.done);
+  const open = state.tasks.filter((t) => !t.done && t.type !== "forward");
   const subjects = new Set(open.map((t) => t.topic));
   const subjectPool = shuffle([
     ...TOPICS.map((t) => t.subject),
@@ -54,15 +60,14 @@ export function openCompose() {
   draft.mode = "task";
   draft.forwardOf = null;
   draft.replyTo = null;
-  draft.recipient = null;
+  draft.recipients = [];
   draft.subjectTopic = null;
   draft.slots = { greeting: null, smalltalk: null, main: null, closing: null };
   draft.step = 0;
   buildComposeOptions();
   $("composeTitle").textContent = "New Message";
   $("toInput").value = "";
-  $("toInput").classList.remove("hidden");
-  $("toChip").classList.add("hidden");
+  renderRecipients();
   $("subjectInput").value = "";
   $("compose").classList.remove("hidden");
   renderBodyPreview();
@@ -79,7 +84,7 @@ export function openReply(email) {
   $("composeTitle").textContent = "Reply";
   draft.subjectTopic = `Re: ${email.subject}`;
   $("subjectInput").value = draft.subjectTopic;
-  selectRecipient(email.from || email.to);
+  addRecipient(email.from || (email.recipients && email.recipients[0]));
 }
 
 /** Forward: subject locked to "Fwd: …"; the original is appended on send. */
@@ -95,6 +100,34 @@ export function openForward(email) {
 export function closeCompose() {
   $("compose").classList.add("hidden");
   hideDropdowns();
+}
+
+export function renderRecipients() {
+  $("toChips").innerHTML = draft.recipients
+    .map(
+      (c, i) =>
+        `<span class="to-chip">${esc(c.name)}<button data-remove="${i}" title="Remove">✕</button></span>`
+    )
+    .join("");
+}
+
+export function addRecipient(contact) {
+  if (!contact || draft.recipients.some((r) => r.email === contact.email)) return;
+  draft.recipients.push(contact);
+  $("toInput").value = "";
+  $("toDropdown").classList.add("hidden");
+  renderRecipients();
+  // Greeting options depend on who's addressed — rebuild if not yet chosen.
+  if (draft.step === 0) renderSlot();
+  updateSendState();
+}
+
+export function removeRecipient(idx) {
+  draft.recipients.splice(idx, 1);
+  renderRecipients();
+  if (draft.step === 0) renderSlot();
+  updateSendState();
+  $("toInput").focus();
 }
 
 export function renderBodyPreview() {
@@ -122,38 +155,19 @@ export function renderSlot() {
 }
 
 export function updateSendState() {
-  const ready = draft.recipient && draft.subjectTopic && draft.step >= SLOTS.length;
+  const ready = draft.recipients.length > 0 && draft.subjectTopic && draft.step >= SLOTS.length;
   $("sendBtn").disabled = !ready;
   $("sendHint").textContent = ready
     ? "Looking good — hit Send."
-    : "Pick a recipient, a subject, and finish the body.";
-}
-
-export function selectRecipient(contact) {
-  draft.recipient = contact;
-  $("toChipText").textContent = `${contact.name} <${contact.email}>`;
-  $("toChip").classList.remove("hidden");
-  $("toInput").classList.add("hidden");
-  $("toDropdown").classList.add("hidden");
-  // Greeting options depend on the recipient's first name — rebuild if not yet chosen.
-  if (draft.step === 0) renderSlot();
-  updateSendState();
-}
-
-export function clearRecipient() {
-  draft.recipient = null;
-  $("toChip").classList.add("hidden");
-  $("toInput").classList.remove("hidden");
-  $("toInput").value = "";
-  if (draft.step === 0) renderSlot();
-  updateSendState();
-  $("toInput").focus();
+    : "Pick recipient(s), a subject, and finish the body.";
 }
 
 export function showToDropdown() {
   const q = $("toInput").value.trim().toLowerCase();
   const matches = CONTACTS.filter(
-    (c) => !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
+    (c) =>
+      !draft.recipients.some((r) => r.email === c.email) &&
+      (!q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q))
   );
   const dd = $("toDropdown");
   dd.innerHTML = matches.length
@@ -180,6 +194,30 @@ export function hideDropdowns() {
   $("subjectDropdown").classList.add("hidden");
 }
 
+/** Which open task (if any) does this send satisfy? */
+function matchTask() {
+  const recipientSet = new Set(draft.recipients.map((r) => r.email));
+  if (draft.mode === "forward" && draft.forwardOf) {
+    const fwd = state.tasks.find(
+      (t) =>
+        !t.done &&
+        t.type === "forward" &&
+        t.infoEmailId === draft.forwardOf.id &&
+        recipientSet.has(t.requester.email)
+    );
+    if (fwd) return fwd;
+  }
+  return state.tasks.find(
+    (t) =>
+      !t.done &&
+      t.type !== "forward" &&
+      t.topic === draft.subjectTopic &&
+      t.phrase === draft.slots.main &&
+      t.targets.length === recipientSet.size &&
+      t.targets.every((x) => recipientSet.has(x.email))
+  );
+}
+
 export function sendEmail() {
   let bodyText =
     [draft.slots.greeting, draft.slots.smalltalk, draft.slots.main, draft.slots.closing].filter(Boolean).join("\n\n") +
@@ -201,19 +239,13 @@ export function sendEmail() {
       draft.mode === "reply" && draft.replyTo
         ? draft.replyTo.threadId ?? draft.replyTo.id
         : sentId,
-    to: draft.recipient,
+    recipients: [...draft.recipients],
     subject: draft.subjectTopic,
     body: bodyText,
     minutes: state.minutes,
     day: state.day,
   });
-  const task = state.tasks.find(
-    (t) =>
-      !t.done &&
-      t.target.email === draft.recipient.email &&
-      t.topic === draft.subjectTopic &&
-      t.phrase === draft.slots.main
-  );
+  const task = matchTask();
   if (task) {
     task.done = true;
     toast(`✅ Task completed! +$${TASK_PAY} at day's end`, "good");
@@ -234,9 +266,12 @@ export function initCompose() {
     const li = e.target.closest("[data-email]");
     if (!li) return;
     const contact = CONTACTS.find((c) => c.email === li.dataset.email);
-    if (contact) selectRecipient(contact);
+    if (contact) addRecipient(contact);
   });
-  $("toChipX").addEventListener("click", clearRecipient);
+  $("toChips").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-remove]");
+    if (btn) removeRecipient(Number(btn.dataset.remove));
+  });
   $("subjectInput").addEventListener("click", () => {
     if (draft.mode !== "task") return; // reply/forward subjects are locked
     const dd = $("subjectDropdown");

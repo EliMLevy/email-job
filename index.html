@@ -68,7 +68,7 @@
     <div class="compose-field">
       <label>To</label>
       <div class="to-wrap">
-        <span class="to-chip hidden" id="toChip"><span id="toChipText"></span><button id="toChipX" title="Remove">✕</button></span>
+        <span id="toChips"></span>
         <input id="toInput" type="text" placeholder="Start typing a name…" autocomplete="off" />
         <ul class="dropdown hidden" id="toDropdown"></ul>
       </div>
@@ -95,11 +95,28 @@
   </div>
 
   <!-- End of day modal -->
+  <div class="modal-backdrop" id="welcomeModal">
+    <div class="modal">
+      <h2>Welcome to Initech! 🎉</h2>
+      <p>Hi Alex — welcome aboard! You're our new Administrative Associate, which
+      mostly means your inbox is about to become your whole personality.</p>
+      <p>Since it's your <strong>first day</strong>, the team has been instructed to
+      keep their requests to a minimum — expect a lighter, slower inbox today.
+      It will not stay that way.</p>
+      <p>Do good work, watch out for phishing, and you'll do great here.</p>
+      <button class="send-btn" id="welcomeBtn">Let's get to work →</button>
+    </div>
+  </div>
+
   <div class="modal-backdrop hidden" id="dayModal">
     <div class="modal">
       <h2 id="modalTitle">Day 1 complete</h2>
       <div id="modalBody"></div>
-      <button class="send-btn" id="nextDayBtn">Start next day →</button>
+      <p class="unlock-note" id="unlockNote"></p>
+      <div class="modal-actions">
+        <button class="send-btn" id="moreBtn">I'm ready for more responsibility!</button>
+        <button class="action-btn" id="stayBtn">I'd like to continue at my current level</button>
+      </div>
     </div>
   </div>
 

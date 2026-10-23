@@ -40,7 +40,7 @@ export function renderList() {
       }
       return (
         `<li class="email-row" data-sent-id="${e.id}">` +
-        `<span class="row-from">To: ${esc(e.to.name)}</span>` +
+        `<span class="row-from">To: ${esc(e.recipients.map((r) => r.name).join(", "))}</span>` +
         `<span class="row-subject">${esc(e.subject)}</span>` +
         `<span class="row-time">${when}</span></li>`
       );
@@ -83,18 +83,30 @@ export function openThread(email) {
     esc(root.subject) + (root.external ? ` <span class="ext-tag">[External Sender]</span>` : "");
   $("readFrom").textContent = root.from
     ? `${root.from.name} <${root.from.email}>`
-    : `To: ${root.to.name} <${root.to.email}>`;
+    : `To: ${root.recipients.map((r) => `${r.name} <${r.email}>`).join(", ")}`;
   $("readTime").textContent = `${fmtTime(root.minutes)} · Day ${root.day}`;
   $("readBody").textContent = root.body;
   renderLure(root);
+  renderInfo(root);
   const banner = $("taskBanner");
   const task = state.tasks.find((t) => t.id === root.taskId);
   if (task) {
     banner.classList.remove("hidden");
     banner.classList.toggle("done", task.done);
-    banner.innerHTML = task.done
-      ? `✅ Task completed: email ${esc(task.target.name)} about “${esc(task.topic)}”.`
-      : `📌 <strong>Task:</strong> Email <strong>${esc(task.target.name)}</strong> about <strong>“${esc(task.topic)}”</strong> before 5 PM.`;
+    if (task.done) {
+      banner.innerHTML =
+        task.type === "forward"
+          ? `✅ Task completed: forwarded “${esc(task.topic)}” to ${esc(task.requester.name)}.`
+          : `✅ Task completed: email ${esc(task.targetsLabel)} about “${esc(task.topic)}”.`;
+    } else if (task.type === "forward") {
+      banner.innerHTML =
+        `📌 <strong>Task:</strong> Forward the <strong>“${esc(task.topic)}”</strong> email to ` +
+        `<strong>${esc(task.requester.name)}</strong> before 5 PM. (Open that email and hit Forward.)`;
+    } else {
+      banner.innerHTML =
+        `📌 <strong>Task:</strong> Email <strong>${esc(task.targetsLabel)}</strong> about ` +
+        `<strong>“${esc(task.topic)}”</strong> before 5 PM.`;
+    }
   } else {
     banner.classList.add("hidden");
   }
@@ -107,13 +119,36 @@ function renderThreadReplies(replies) {
     .map((m) => {
       const head = m.from
         ? `${esc(m.from.name)} · ${fmtTime(m.minutes)} · Day ${m.day}`
-        : `You → ${esc(m.to.name)} · ${fmtTime(m.minutes)} · Day ${m.day}`;
+        : `You → ${esc(m.recipients.map((r) => r.name).join(", "))} · ${fmtTime(m.minutes)} · Day ${m.day}`;
       return (
         `<div class="thread-reply"><div class="thread-reply-head">${head}</div>` +
         `<div class="thread-reply-body">${esc(m.body)}</div></div>`
       );
     })
     .join("");
+}
+
+/** Info emails carry a file or a detail worth forwarding. Just displays it. */
+export function renderInfo(email) {
+  if (!email.info) return;
+  const body = $("readBody");
+  const wrap = document.createElement("div");
+  wrap.className = "lure";
+  if (email.info.kind === "pdf") {
+    const chip = document.createElement("span");
+    chip.className = "attachment-chip static";
+    chip.textContent = `📎 ${email.info.file}`;
+    wrap.appendChild(chip);
+  } else {
+    const box = document.createElement("div");
+    box.className = "info-box";
+    box.textContent =
+      email.info.kind === "deadline"
+        ? `🗓 ${email.info.label}: ${email.info.detail}`
+        : `🔑 ${email.info.label}: ${email.info.detail}`;
+    wrap.appendChild(box);
+  }
+  body.appendChild(wrap);
 }
 
 export function openInboxEmail(email) {
