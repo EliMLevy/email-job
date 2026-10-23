@@ -25,5 +25,6 @@ renderAll();
 // The clock doesn't start until the welcome dialog is dismissed.
 $("welcomeBtn").addEventListener("click", () => {
   $("welcomeModal").classList.add("hidden");
-  startTimer();
+  state.begun = true;
+  if (!state.paused) startTimer();
 });

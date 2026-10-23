@@ -32,8 +32,25 @@ export function stopTimer() {
   state.timer = null;
 }
 
+/** Pause/resume the workday clock so the player can step away. */
+export function updatePauseBtn() {
+  $("pauseBtn").textContent = state.paused ? "▶ Resume" : "⏸ Pause";
+  $("clock").classList.toggle("paused", state.paused);
+}
+
+export function togglePause() {
+  state.paused = !state.paused;
+  if (state.paused) {
+    stopTimer();
+  } else if (state.begun && !state.dayOver) {
+    startTimer();
+  }
+  updatePauseBtn();
+}
+
 export function endDay() {
   stopTimer();
+  state.dayOver = true;
   const done = state.tasks.filter((t) => t.done);
   const open = state.tasks.filter((t) => !t.done);
   const bonus = done.length * TASK_PAY;
@@ -75,6 +92,9 @@ export function endDay() {
 export function startNextDay() {
   state.day++;
   state.minutes = DAY_START;
+  state.dayOver = false;
+  state.paused = false;
+  updatePauseBtn();
   // The inbox and Sent carry over — only tasks and phish clicks reset.
   state.tasks = [];
   state.phishClicks = 0;
@@ -88,6 +108,14 @@ export function startNextDay() {
 }
 
 export function initDay() {
+  $("pauseBtn").addEventListener("click", togglePause);
+  document.addEventListener("keydown", (e) => {
+    const tag = document.activeElement && document.activeElement.tagName;
+    if ((e.code === "Space" || e.code === "KeyP") && tag !== "INPUT" && tag !== "TEXTAREA") {
+      e.preventDefault();
+      togglePause();
+    }
+  });
   $("moreBtn").addEventListener("click", () => {
     if (state.level < MAX_LEVEL) state.level++;
     startNextDay();

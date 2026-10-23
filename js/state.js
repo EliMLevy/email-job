@@ -13,6 +13,9 @@ export const newId = () => idCounter++;
 export const state = {
   day: 1,
   level: 1, // progression: 1 = single emails, 2 = + groups, 3 = + forwarding
+  begun: false, // true once the welcome dialog is dismissed
+  paused: false,
+  dayOver: false, // true while the day-complete dialog is up
   balance: 0,
   minutes: DAY_START,
   timer: null,
