@@ -77,3 +77,25 @@ export function checkFollowups() {
     }
   }
 }
+
+/**
+ * Deliver one noise email (phishing / hi / announcement). No task, no toast —
+ * noise should have to be discovered in the inbox like real clutter.
+ */
+export function deliverNoise(item) {
+  const t = item.template;
+  const base = { id: newId(), minutes: state.minutes, read: false, taskId: null, kind: item.kind };
+  if (item.kind === "phish") {
+    state.emails.unshift({ ...base, from: t.from, subject: t.subject, body: t.body, external: true, lure: t.lure, phished: false });
+  } else if (item.kind === "hi") {
+    state.emails.unshift({
+      ...base,
+      from: item.from,
+      subject: t.subject,
+      body: `${t.body}\n\n— ${item.from.name.split(" ")[0]}`,
+    });
+  } else {
+    state.emails.unshift({ ...base, from: t.from, subject: t.subject, body: t.body });
+  }
+  renderAll();
+}

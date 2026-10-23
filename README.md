@@ -41,6 +41,9 @@ python3 -m http.server 8000   # then open http://localhost:8000
 - Composing is a 4-step phrase builder: greeting → corporate small talk →
   main point → closing. Subject and phrase options mix the real answers with
   decoys — sensible, bland, and absurd ("Werewolf Attack", "Ceiling Bees", …).
+- The inbox also gets **noise**: phishing scams (tagged `[External Sender]`,
+  with clickable links/attachments — clicking one costs **−$50**), teammates
+  just saying hi, and satirical corporate announcements.
 - Completing a task pays **+$40**; each task still open at 5 PM is a citation, **−$30**.
 - Daily pay is $250 base + bonuses − citations (floored at $0); your balance carries across days.
 

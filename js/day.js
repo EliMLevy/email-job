@@ -1,8 +1,8 @@
 // The workday clock and the end-of-day reckoning: pay, citations, next day.
 import { state, planDay } from "./state.js";
-import { DAY_START, DAY_END, TICK_MS, BASE_PAY, TASK_PAY, CITATION_FEE } from "./data.js";
+import { DAY_START, DAY_END, TICK_MS, BASE_PAY, TASK_PAY, CITATION_FEE, PHISH_FINE } from "./data.js";
 import { $, esc } from "./utils.js";
-import { deliver, checkFollowups } from "./inbox.js";
+import { deliver, checkFollowups, deliverNoise } from "./inbox.js";
 import { renderHeader, renderAll } from "./views.js";
 import { closeCompose } from "./compose.js";
 
@@ -10,6 +10,9 @@ export function tick() {
   state.minutes++;
   while (state.plan.length && state.plan[0].minutes <= state.minutes) {
     deliver(state.plan.shift());
+  }
+  while (state.noise.length && state.noise[0].minutes <= state.minutes) {
+    deliverNoise(state.noise.shift());
   }
   checkFollowups();
   renderHeader();
@@ -32,13 +35,17 @@ export function endDay() {
   const open = state.tasks.filter((t) => !t.done);
   const bonus = done.length * TASK_PAY;
   const fines = open.length * CITATION_FEE;
-  const pay = Math.max(0, BASE_PAY + bonus - fines);
+  const phishFines = state.phishClicks * PHISH_FINE;
+  const pay = Math.max(0, BASE_PAY + bonus - fines - phishFines);
   state.balance += pay;
   $("modalTitle").textContent = `Day ${state.day} complete 🎉`;
   $("modalBody").innerHTML =
     `<div class="pay-line"><span>Base pay</span><span>$${BASE_PAY}</span></div>` +
     `<div class="pay-line"><span>Tasks completed (${done.length} × $${TASK_PAY})</span><span>+$${bonus}</span></div>` +
     `<div class="pay-line"><span>Citations (${open.length} × −$${CITATION_FEE})</span><span>−$${fines}</span></div>` +
+    (state.phishClicks
+      ? `<div class="pay-line"><span>Phishing incidents (${state.phishClicks} × −$${PHISH_FINE})</span><span>−$${phishFines}</span></div>`
+      : "") +
     `<div class="pay-line pay-total"><span>Today's pay</span><span>$${pay}</span></div>` +
     `<div class="pay-line"><span>Total balance</span><span>$${state.balance}</span></div>` +
     (open.length
@@ -60,6 +67,7 @@ export function startNextDay() {
   state.emails = [];
   state.sent = [];
   state.tasks = [];
+  state.phishClicks = 0;
   state.openEmail = null;
   state.view = "inbox";
   closeCompose();

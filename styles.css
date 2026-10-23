@@ -79,6 +79,13 @@ button { font: inherit; cursor: pointer; }
 }
 .task-banner.done { background: #e6f4ea; border-color: #34a853; }
 .read-body { font-size: 14.5px; line-height: 1.6; white-space: pre-wrap; }
+.ext-tag { display: inline-block; font-size: 11px; font-weight: 700; color: #b06000; border: 1px solid #f9ab00; background: #fef7e0; border-radius: 4px; padding: 0 4px; vertical-align: 1px; white-space: nowrap; }
+.lure { margin-top: 16px; }
+.phish-link { color: #1a73e8; font-size: 15px; font-weight: 600; }
+.phish-url { color: #5f6368; font-size: 12.5px; }
+.attachment-chip { font: inherit; font-size: 13.5px; background: #f1f3f4; border: 1px solid #dadce0; border-radius: 8px; padding: 8px 12px; cursor: pointer; }
+.attachment-chip:hover { background: #e8eaed; }
+.phished-warning { margin-top: 16px; background: #fce8e6; border: 1px solid #d93025; color: #a50e0e; border-radius: 8px; padding: 10px 12px; font-size: 14px; }
 
 /* ---------- compose ---------- */
 .compose {

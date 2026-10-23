@@ -108,6 +108,100 @@ export const FLAVOR = [
 
 // Minutes after midnight when task emails arrive (9:10 AM … 4:00 PM).
 export const SCHEDULE = [550, 600, 650, 700, 785, 840, 910, 960];
+
+// ---------------------------------------------------------------------------
+// Inbox noise: emails that are NOT tasks.
+// ---------------------------------------------------------------------------
+
+// Phishing scams. Always from outside the company (the UI tags them
+// [External Sender]) and always carrying a lure: a link or an attachment
+// the player is tempted to click. Clicking one costs PHISH_FINE at day's end.
+export const PHISH_FINE = 50;
+export const PHISH_EMAILS = [
+  {
+    from: { name: "IT Helpdesk", email: "helpdesk@company-it-support.net" },
+    subject: "URGENT: Your password expires in 2 hours!!",
+    body: "Dear Employee,\n\nOur system detect unusual activity on your account. Your password will expire in 2 hours. Verify immediately to avoid being locked out.\n\nIT Helpdesk Team",
+    lure: { type: "link", label: "Verify My Account Now", url: "http://company-login.secure-verify.ru/auth" },
+  },
+  {
+    from: { name: "Accounts Payable", email: "ap@vendor-invoices.biz" },
+    subject: "Invoice #8841 OVERDUE — action required",
+    body: "Hello,\n\nAttached is the overdue invoice #8841. Payment is required TODAY to avoid service interruption. Open the attached file to view details.\n\nAccounts Payable",
+    lure: { type: "attachment", label: "Invoice_8841.pdf.exe", size: "1.2 MB" },
+  },
+  {
+    from: { name: "Office of the CEO", email: "ceo@company-exec-mail.com" },
+    subject: "Confidential — I need a favor, do not discuss",
+    body: "Alex,\n\nI am in a meeting and cannot talk. I need you to purchase gift cards for a client surprise. This is confidential — do not tell anyone. Use the link below and send me the codes.\n\nSent from my phone",
+    lure: { type: "link", label: "Purchase Gift Cards", url: "http://giftcard-portal-fast.net/buy" },
+  },
+  {
+    from: { name: "DocuSign", email: "docusign@sign-docs-fast.net" },
+    subject: "You have a document to sign: Q3_Agreement_FINAL",
+    body: "You have received a document to review and sign.\n\nThis document will expire soon. Please review at your earliest convenience.",
+    lure: { type: "link", label: "Review Document", url: "http://docusign.secure-docs-view.com/sign" },
+  },
+  {
+    from: { name: "Parcel Delivery", email: "tracking@parcel-delivery-info.com" },
+    subject: "Your package is being held at the depot",
+    body: "Dear Customer,\n\nWe attempted delivery of your package but no one was available. Print the attached shipping label and bring it to the depot within 48 hours or the package will be returned.",
+    lure: { type: "attachment", label: "Shipping_Label.pdf.scr", size: "842 KB" },
+  },
+];
+
+// Teammates just saying hi. No task, no stakes — pure inbox clutter.
+// The sender is picked from the cast at planning time.
+export const HI_EMAILS = [
+  { subject: "hi", body: "Hi Alex,\n\nJust wanted to say hi. That is the entire email.\n\nOkay bye." },
+  { subject: "Hey!!", body: "Hey!!\n\nNo reason for this email. Just saying hey.\n\nHope your inbox is treating you well." },
+  { subject: "quick hello", body: "Hi Alex,\n\nPopping into your inbox to say hello. Hello.\n\nCarry on." },
+  { subject: "👋", body: "👋\n\n(That's it. That's the email.)" },
+  { subject: "tacos?", body: "Hi,\n\nThinking about tacos for lunch. Not organizing anything. Just wanted someone else to be thinking about tacos too.\n\nYou're welcome." },
+];
+
+// Corporate announcements. Satire encouraged. Sender included per template.
+export const ANNOUNCEMENTS = [
+  {
+    from: { name: "Corporate Communications", email: "comms@company.com" },
+    subject: "Mandatory Fun: Q3 Morale Initiative",
+    body: "Team,\n\nAttendance at Friday's Mandatory Fun session is compulsory. Smiling will be monitored. Enthusiasm metrics from last quarter were disappointing and have been noted in your files.\n\n— Corporate Communications",
+  },
+  {
+    from: { name: "People Team", email: "people@company.com" },
+    subject: "Reminder: We're a Family Here",
+    body: "Hi family,\n\nA gentle reminder that, as a family, we do not discuss salaries with our siblings — that is, coworkers. Families also don't keep secrets, so please enable screen sharing at all times.\n\n— The People Team",
+  },
+  {
+    from: { name: "Corporate Communications", email: "comms@company.com" },
+    subject: "Synergy Update: Synergy Up 400%",
+    body: "Following the merger of the Synergy Team and the Alignment Team into the Synergy & Alignment Team, synergy is up 400% quarter over quarter. Please direct all questions to the Synergy & Alignment Team.\n\n— Corporate Communications",
+  },
+  {
+    from: { name: "Facilities", email: "facilities@company.com" },
+    subject: "Microwave Policy Update (Fish)",
+    body: "Effective immediately, microwaving fish in the break room is a terminable offense. The salmon incident of last Tuesday will not be repeated. You know who you are.\n\n— Facilities",
+  },
+  {
+    from: { name: "People Team", email: "people@company.com" },
+    subject: "Casual Friday Suspended",
+    body: "Casual Friday has been suspended until further notice due to excessive casualness. Business formal dress resumes Monday. Hoodies will be confiscated and donated.\n\n— The People Team",
+  },
+  {
+    from: { name: "Office of the CEO", email: "ceo-office@company.com" },
+    subject: "All-Hands Recap: The Pivot",
+    body: "For those who missed the all-hands: we are pivoting. The direction of the pivot is still being aligned on. Please continue rowing in the previous direction until told otherwise.\n\n— Office of the CEO",
+  },
+  {
+    from: { name: "Corporate Communications", email: "comms@company.com" },
+    subject: "New Core Value Unlocked: Humility",
+    body: "We are thrilled to announce Humility as our 14th core value. Please update your email signatures by EOD. Anyone not displaying all 14 values will be coached on humility.\n\n— Corporate Communications",
+  },
+];
+
+// Minutes after midnight when noise emails land (interleaved with tasks).
+export const NOISE_SCHEDULE = [565, 620, 675, 725, 800, 865, 935];
+
 export const DAY_START = 540; // 9:00 AM
 export const DAY_END = 1020; // 5:00 PM
 export const TICK_MS = 500; // 1 game minute per real 0.5s → an 8h day ≈ 4 minutes

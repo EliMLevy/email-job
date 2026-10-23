@@ -2,6 +2,8 @@
 // the email list, and the reading view. Owns the list/read navigation wiring.
 import { state } from "./state.js";
 import { $, esc, fmtTime } from "./utils.js";
+import { PHISH_FINE } from "./data.js";
+import { toast } from "./ui.js";
 
 export function renderHeader() {
   $("clock").textContent = fmtTime(state.minutes);
@@ -27,10 +29,11 @@ export function renderList() {
     .map((e) => {
       if (isInbox) {
         const snippet = e.body.split("\n").filter(Boolean)[1] || e.body.split("\n")[0] || "";
+        const tag = e.external ? `<span class="ext-tag">[External Sender]</span> ` : "";
         return (
           `<li class="email-row ${e.read ? "" : "unread"}" data-email-id="${e.id}">` +
           `<span class="row-from">${esc(e.from.name)}</span>` +
-          `<span class="row-subject">${esc(e.subject)} <span class="snippet">— ${esc(snippet)}</span></span>` +
+          `<span class="row-subject">${tag}${esc(e.subject)} <span class="snippet">— ${esc(snippet)}</span></span>` +
           `<span class="row-time">${fmtTime(e.minutes)}</span></li>`
         );
       }
@@ -60,10 +63,12 @@ export function openInboxEmail(email) {
   state.openEmail = email;
   $("listView").classList.add("hidden");
   $("readView").classList.remove("hidden");
-  $("readSubject").textContent = email.subject;
+  $("readSubject").innerHTML =
+    esc(email.subject) + (email.external ? ` <span class="ext-tag">[External Sender]</span>` : "");
   $("readFrom").textContent = `${email.from.name} <${email.from.email}>`;
   $("readTime").textContent = fmtTime(email.minutes);
   $("readBody").textContent = email.body;
+  renderLure(email);
   const banner = $("taskBanner");
   const task = state.tasks.find((t) => t.id === email.taskId);
   if (task) {
@@ -76,6 +81,51 @@ export function openInboxEmail(email) {
     banner.classList.add("hidden");
   }
   renderSidebar();
+}
+
+/** Phishing emails carry a clickable lure; clicked ones show the damage. */
+export function renderLure(email) {
+  const body = $("readBody");
+  if (email.phished) {
+    const warn = document.createElement("div");
+    warn.className = "phished-warning";
+    warn.textContent = `⚠️ You fell for it. IT Security has been notified — this costs you $${PHISH_FINE} at day's end.`;
+    body.appendChild(warn);
+    return;
+  }
+  if (!email.lure) return;
+  const wrap = document.createElement("div");
+  wrap.className = "lure";
+  if (email.lure.type === "link") {
+    const a = document.createElement("a");
+    a.className = "phish-link";
+    a.href = "#";
+    a.textContent = email.lure.label;
+    a.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      handlePhishClick(email);
+    });
+    const url = document.createElement("span");
+    url.className = "phish-url";
+    url.textContent = email.lure.url;
+    wrap.append(a, document.createElement("br"), url);
+  } else {
+    const chip = document.createElement("button");
+    chip.className = "attachment-chip";
+    chip.textContent = `📎 ${email.lure.label} (${email.lure.size})`;
+    chip.addEventListener("click", () => handlePhishClick(email));
+    wrap.appendChild(chip);
+  }
+  body.appendChild(wrap);
+}
+
+/** The player took the bait: fine them and mark the email as phished. */
+export function handlePhishClick(email) {
+  if (email.phished) return;
+  email.phished = true;
+  state.phishClicks++;
+  toast(`🚨 That was a phishing email! −$${PHISH_FINE} at day's end`, "bad");
+  openInboxEmail(email);
 }
 
 export function openSentEmail(email) {
