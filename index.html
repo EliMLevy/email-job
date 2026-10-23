@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MailJob — a game about email</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>✉️</text></svg>" />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon">✉️</span> Mail<span class="brand-job">Job</span></div>
+    <div class="searchbar">🔍 Search mail (not in prototype)</div>
+    <div class="top-right">
+      <div class="clock" id="clock">9:00 AM</div>
+      <div class="dayline"><span id="dayLabel">Day 1</span> · <span id="balance">$0</span></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <button class="compose-btn" id="composeBtn">✏️ Compose</button>
+      <nav class="folders">
+        <button class="folder active" data-view="inbox">📥 Inbox <span class="badge" id="unreadBadge"></span></button>
+        <button class="folder" data-view="sent">📤 Sent</button>
+      </nav>
+      <div class="tasks-panel">
+        <h3>📌 Open tasks <span class="badge" id="taskBadge"></span></h3>
+        <ul id="taskList"></ul>
+        <p class="tasks-empty" id="tasksEmpty">No open tasks. Nice and quiet… for now.</p>
+      </div>
+      <div class="howto">
+        <h4>How to play</h4>
+        <p>Coworkers email you favors. Each one is a task: compose an email to the
+        right person, pick the right subject, and build the body phrase by phrase.
+        Finish tasks before 5 PM or get cited. Pay: $250/day + $40 per task − $30 per citation.</p>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section id="listView">
+        <div class="list-head"><h2 id="listTitle">Inbox</h2></div>
+        <ul class="email-list" id="emailList"></ul>
+        <p class="list-empty" id="listEmpty">No emails yet. The workday is young.</p>
+      </section>
+
+      <section id="readView" class="hidden">
+        <button class="back-btn" id="backBtn">← Back</button>
+        <h2 id="readSubject"></h2>
+        <div class="read-meta"><span id="readFrom"></span> · <span id="readTime"></span></div>
+        <div class="task-banner hidden" id="taskBanner"></div>
+        <div class="read-body" id="readBody"></div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Compose window (Gmail-style popup) -->
+  <div class="compose hidden" id="compose">
+    <div class="compose-head">
+      <span>New Message</span>
+      <button class="compose-close" id="composeClose" title="Discard">✕</button>
+    </div>
+    <div class="compose-field">
+      <label>To</label>
+      <div class="to-wrap">
+        <span class="to-chip hidden" id="toChip"><span id="toChipText"></span><button id="toChipX" title="Remove">✕</button></span>
+        <input id="toInput" type="text" placeholder="Start typing a name…" autocomplete="off" />
+        <ul class="dropdown hidden" id="toDropdown"></ul>
+      </div>
+    </div>
+    <div class="compose-field">
+      <label>Subject</label>
+      <div class="subject-wrap">
+        <input id="subjectInput" type="text" placeholder="Choose a subject…" readonly />
+        <ul class="dropdown hidden" id="subjectDropdown"></ul>
+      </div>
+    </div>
+    <div class="compose-body">
+      <div class="body-preview" id="bodyPreview"><span class="body-placeholder">Your email will appear here as you choose phrases…</span></div>
+      <div class="slot-area">
+        <div class="slot-label" id="slotLabel"></div>
+        <div class="slot-options" id="slotOptions"></div>
+        <button class="slot-reset hidden" id="slotReset">↩ Start body over</button>
+      </div>
+    </div>
+    <div class="compose-foot">
+      <button class="send-btn" id="sendBtn" disabled>Send</button>
+      <span class="send-hint" id="sendHint">Pick a recipient, a subject, and finish the body.</span>
+    </div>
+  </div>
+
+  <!-- End of day modal -->
+  <div class="modal-backdrop hidden" id="dayModal">
+    <div class="modal">
+      <h2 id="modalTitle">Day 1 complete</h2>
+      <div id="modalBody"></div>
+      <button class="send-btn" id="nextDayBtn">Start next day →</button>
+    </div>
+  </div>
+
+  <div class="toasts" id="toasts"></div>
+
+  <script src="game.js"></script>
+</body>
+</html>
