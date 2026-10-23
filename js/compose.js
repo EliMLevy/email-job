@@ -1,0 +1,226 @@
+// The compose window — the core mechanic. The player picks a recipient
+// (autocomplete), a subject (option list), and builds the body phrase by
+// phrase (greeting → main point → closing). Sending completes a task only
+// when recipient + subject + main phrase all match an open task.
+import { state, draft, newId } from "./state.js";
+import { CONTACTS, TOPICS, DISTRACTOR_PHRASES, CLOSINGS, SIGNATURE, TASK_PAY } from "./data.js";
+import { $, esc, shuffle } from "./utils.js";
+import { toast } from "./ui.js";
+import { renderAll } from "./views.js";
+
+function greetingOptions() {
+  const first = draft.recipient ? draft.recipient.name.split(" ")[0] : "there";
+  return [`Hi ${first},`, `Hello ${first},`, `Good morning ${first},`, `Hey ${first},`];
+}
+
+const SLOTS = [
+  { key: "greeting", label: "Step 1 · Choose a greeting", options: () => greetingOptions() },
+  { key: "main", label: "Step 2 · Choose the main point", options: () => draft.mainOptions },
+  { key: "closing", label: "Step 3 · Choose a closing", options: () => CLOSINGS },
+];
+
+/** Options always include every open task's topic/phrase, padded with decoys. */
+export function buildComposeOptions() {
+  const open = state.tasks.filter((t) => !t.done);
+  const subjects = new Set(open.map((t) => t.topic));
+  for (const t of shuffle(TOPICS)) {
+    if (subjects.size >= 4) break;
+    subjects.add(t.subject);
+  }
+  const phrases = new Set(open.map((t) => t.phrase));
+  for (const p of shuffle(DISTRACTOR_PHRASES)) {
+    if (phrases.size >= 4) break;
+    phrases.add(p);
+  }
+  draft.subjectOptions = shuffle([...subjects]);
+  draft.mainOptions = shuffle([...phrases]);
+}
+
+export function openCompose() {
+  draft.recipient = null;
+  draft.subjectTopic = null;
+  draft.slots = { greeting: null, main: null, closing: null };
+  draft.step = 0;
+  buildComposeOptions();
+  $("toInput").value = "";
+  $("toInput").classList.remove("hidden");
+  $("toChip").classList.add("hidden");
+  $("subjectInput").value = "";
+  $("compose").classList.remove("hidden");
+  renderBodyPreview();
+  renderSlot();
+  updateSendState();
+  $("toInput").focus();
+}
+
+export function closeCompose() {
+  $("compose").classList.add("hidden");
+  hideDropdowns();
+}
+
+export function renderBodyPreview() {
+  const parts = [draft.slots.greeting, draft.slots.main, draft.slots.closing].filter(Boolean);
+  $("bodyPreview").innerHTML = parts.length
+    ? esc(parts.join("\n\n") + (draft.slots.closing ? `\n${SIGNATURE}` : ""))
+    : `<span class="body-placeholder">Your email will appear here as you choose phrases…</span>`;
+}
+
+export function renderSlot() {
+  const reset = $("slotReset");
+  if (draft.step >= SLOTS.length) {
+    $("slotLabel").textContent = "Body complete ✓";
+    $("slotOptions").innerHTML = "";
+    reset.classList.remove("hidden");
+    return;
+  }
+  reset.classList.toggle("hidden", draft.step === 0);
+  const slot = SLOTS[draft.step];
+  $("slotLabel").textContent = slot.label;
+  $("slotOptions").innerHTML = slot
+    .options()
+    .map((opt) => `<button class="slot-opt" data-opt="${esc(opt)}">${esc(opt)}</button>`)
+    .join("");
+}
+
+export function updateSendState() {
+  const ready = draft.recipient && draft.subjectTopic && draft.step >= SLOTS.length;
+  $("sendBtn").disabled = !ready;
+  $("sendHint").textContent = ready
+    ? "Looking good — hit Send."
+    : "Pick a recipient, a subject, and finish the body.";
+}
+
+export function selectRecipient(contact) {
+  draft.recipient = contact;
+  $("toChipText").textContent = `${contact.name} <${contact.email}>`;
+  $("toChip").classList.remove("hidden");
+  $("toInput").classList.add("hidden");
+  $("toDropdown").classList.add("hidden");
+  // Greeting options depend on the recipient's first name — rebuild if not yet chosen.
+  if (draft.step === 0) renderSlot();
+  updateSendState();
+}
+
+export function clearRecipient() {
+  draft.recipient = null;
+  $("toChip").classList.add("hidden");
+  $("toInput").classList.remove("hidden");
+  $("toInput").value = "";
+  if (draft.step === 0) renderSlot();
+  updateSendState();
+  $("toInput").focus();
+}
+
+export function showToDropdown() {
+  const q = $("toInput").value.trim().toLowerCase();
+  const matches = CONTACTS.filter(
+    (c) => !q || c.name.toLowerCase().includes(q) || c.email.toLowerCase().includes(q)
+  );
+  const dd = $("toDropdown");
+  dd.innerHTML = matches.length
+    ? matches
+        .map(
+          (c) =>
+            `<li data-email="${esc(c.email)}">${esc(c.name)} <span class="dd-sub">${esc(c.email)} · ${esc(c.role)}</span></li>`
+        )
+        .join("")
+    : `<li>No matches</li>`;
+  dd.classList.remove("hidden");
+}
+
+export function showSubjectDropdown() {
+  const dd = $("subjectDropdown");
+  dd.innerHTML = draft.subjectOptions
+    .map((s) => `<li data-subject="${esc(s)}">${esc(s)}</li>`)
+    .join("");
+  dd.classList.remove("hidden");
+}
+
+export function hideDropdowns() {
+  $("toDropdown").classList.add("hidden");
+  $("subjectDropdown").classList.add("hidden");
+}
+
+export function sendEmail() {
+  const bodyText =
+    [draft.slots.greeting, draft.slots.main, draft.slots.closing].filter(Boolean).join("\n\n") +
+    `\n${SIGNATURE}`;
+  state.sent.unshift({
+    id: newId(),
+    to: draft.recipient,
+    subject: draft.subjectTopic,
+    body: bodyText,
+    minutes: state.minutes,
+  });
+  const task = state.tasks.find(
+    (t) =>
+      !t.done &&
+      t.target.email === draft.recipient.email &&
+      t.topic === draft.subjectTopic &&
+      t.phrase === draft.slots.main
+  );
+  if (task) {
+    task.done = true;
+    toast(`✅ Task completed! +$${TASK_PAY} at day's end`, "good");
+  } else {
+    toast("Email sent.");
+  }
+  closeCompose();
+  renderAll();
+}
+
+/** All compose-window listeners, including click-outside and Escape. */
+export function initCompose() {
+  $("composeBtn").addEventListener("click", openCompose);
+  $("composeClose").addEventListener("click", closeCompose);
+  $("toInput").addEventListener("input", showToDropdown);
+  $("toInput").addEventListener("focus", showToDropdown);
+  $("toDropdown").addEventListener("click", (e) => {
+    const li = e.target.closest("[data-email]");
+    if (!li) return;
+    const contact = CONTACTS.find((c) => c.email === li.dataset.email);
+    if (contact) selectRecipient(contact);
+  });
+  $("toChipX").addEventListener("click", clearRecipient);
+  $("subjectInput").addEventListener("click", () => {
+    const dd = $("subjectDropdown");
+    if (dd.classList.contains("hidden")) showSubjectDropdown();
+    else dd.classList.add("hidden");
+  });
+  $("subjectDropdown").addEventListener("click", (e) => {
+    const li = e.target.closest("[data-subject]");
+    if (!li) return;
+    draft.subjectTopic = li.dataset.subject;
+    $("subjectInput").value = draft.subjectTopic;
+    hideDropdowns();
+    updateSendState();
+  });
+  $("slotOptions").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-opt]");
+    if (!btn || draft.step >= SLOTS.length) return;
+    const slot = SLOTS[draft.step];
+    draft.slots[slot.key] = btn.dataset.opt;
+    draft.step++;
+    renderBodyPreview();
+    renderSlot();
+    updateSendState();
+  });
+  $("slotReset").addEventListener("click", () => {
+    draft.slots = { greeting: null, main: null, closing: null };
+    draft.step = 0;
+    renderBodyPreview();
+    renderSlot();
+    updateSendState();
+  });
+  $("sendBtn").addEventListener("click", sendEmail);
+  document.addEventListener("click", (e) => {
+    if (!e.target.closest(".to-wrap")) $("toDropdown").classList.add("hidden");
+    if (!e.target.closest(".subject-wrap")) $("subjectDropdown").classList.add("hidden");
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      hideDropdowns();
+      if (!$("compose").classList.contains("hidden")) closeCompose();
+    }
+  });
+}
