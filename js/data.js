@@ -113,11 +113,13 @@ export const DAY1_SCHEDULE = [600, 690, 790, 890];
 // --- Progression -----------------------------------------------------------
 // Level 1: email one person about a topic. Level 2: + group emails.
 // Level 3: + forward-the-information tasks. Level 4: + mandatory trainings.
-export const MAX_LEVEL = 4;
+// Level 5: + external partners asking questions (reply with the details).
+export const MAX_LEVEL = 5;
 export const NEXT_UNLOCK = {
   1: { name: "Group emails", blurb: "Requests will start asking you to email several people at once." },
   2: { name: "Forwarding information", blurb: "People will send you files and details — and later, someone else will ask you to forward them on." },
   3: { name: "Mandatory trainings", blurb: "Each day brings a mandatory training module — a quick game you have to finish before 5 PM." },
+  4: { name: "External partners", blurb: "Outside partners will email you questions — tagged external, but legit. A teammate warns you before they write, and you answer by replying." },
 };
 
 // Information one person sends you, which someone else will later ask you
@@ -169,6 +171,20 @@ export const TRAINING_BODY =
   "tic-tac-toe exercise below before 5 PM — it doesn't matter whether you win or lose, " +
   "but it does have to be finished.\n\nOpen this email and hit Start Training.\n\n— The People Team";
 export const TRAINING_MESSAGE = "Your performance in the training has been recorded for evaluations.";
+
+// --- External partners (level 5) -------------------------------------------
+// Legitimate outside contacts. Their emails carry the [External Sender] tag
+// like phishing does — but they have no lure, and replying to them is a task.
+export const PARTNERS = [
+  { name: "Jordan Reyes", email: "jordan.reyes@northwind.com", company: "Northwind Traders" },
+  { name: "Aisha Khan", email: "aisha.khan@globex.com", company: "Globex" },
+  { name: "Ben Carter", email: "ben.carter@acme.com", company: "Acme Corp" },
+  { name: "Sofia Marino", email: "sofia.marino@bluepeak.co", company: "Bluepeak Consulting" },
+];
+
+// A teammate warns you in the morning; the partner's question lands at noon.
+export const HEADS_UP_TIME = 570; // 9:30 AM
+export const PARTNER_TIME = 720; // 12:00 PM
 
 // ---------------------------------------------------------------------------
 // Inbox noise: emails that are NOT tasks.

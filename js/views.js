@@ -99,7 +99,9 @@ export function openThread(email) {
           ? `✅ Task completed: forwarded “${esc(task.topic)}” to ${esc(task.requester.name)}.`
           : task.type === "training"
             ? `✅ Task completed: mandatory training finished.`
-            : `✅ Task completed: email ${esc(task.targetsLabel)} about “${esc(task.topic)}”.`;
+            : task.type === "partner"
+              ? `✅ Task completed: replied to ${esc(task.requester.name)} about “${esc(task.topic)}”.`
+              : `✅ Task completed: email ${esc(task.targetsLabel)} about “${esc(task.topic)}”.`;
     } else if (task.type === "forward") {
       banner.innerHTML =
         `📌 <strong>Task:</strong> Forward the <strong>“${esc(task.topic)}”</strong> email to ` +
@@ -108,6 +110,10 @@ export function openThread(email) {
       banner.innerHTML =
         `📌 <strong>Task:</strong> Complete the mandatory training before 5 PM. ` +
         `(Hit Start Training below — win, lose, or draw, it just has to be finished.)`;
+    } else if (task.type === "partner") {
+      banner.innerHTML =
+        `📌 <strong>Task:</strong> Reply to <strong>${esc(task.requester.name)}</strong> with the ` +
+        `details about <strong>“${esc(task.topic)}”</strong> before 5 PM. (Hit Reply and pick the right main point.)`;
     } else {
       banner.innerHTML =
         `📌 <strong>Task:</strong> Email <strong>${esc(task.targetsLabel)}</strong> about ` +

@@ -56,6 +56,12 @@ python3 -m http.server 8000   # then open http://localhost:8000
      module: a game of tic-tac-toe against the computer. Win, lose, or draw,
      it just has to be finished before 5 PM, or it's a citation like any
      other undone task.
+  4. **External partners** — once a day, an outside partner emails you a
+     question about a topic, tagged `[External Sender]` but legit (no lure,
+     no phishing fine). A teammate warns you that morning that the partner
+     is coming and what they'll ask about. Answer by hitting Reply on the
+     partner's email and picking the right main point — replying to the
+     wrong email, or dropping the partner from the recipients, doesn't count.
 
 ## The loop
 

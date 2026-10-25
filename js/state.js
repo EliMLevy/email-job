@@ -4,7 +4,7 @@ import {
   CONTACTS, TOPICS, REQUEST_SUBJECTS, FLAVOR, SCHEDULE, DAY1_SCHEDULE, DAY_START,
   PHISH_EMAILS, HI_EMAILS, ANNOUNCEMENTS, NOISE_SCHEDULE,
   INFO_ITEMS, FORWARD_REASONS, FORWARD_REQUEST_SLOTS, INTRO_EMAILS, INTRO_SCHEDULE_DAY1,
-  TRAINING_TIME,
+  TRAINING_TIME, PARTNERS, HEADS_UP_TIME, PARTNER_TIME,
 } from "./data.js";
 import { shuffle } from "./utils.js";
 
@@ -53,7 +53,8 @@ export const draft = {
  * Build today's delivery schedule. Day 1 is lighter and slower; group tasks
  * join at level 2; at level 3 a new info document drops daily and every
  * owned document draws two forward requests; at level 4 a training module
- * joins as well.
+ * joins as well; at level 5 a teammate's heads-up plus an external partner's
+ * question join too.
  */
 export function planDay() {
   const schedule = state.day === 1 ? DAY1_SCHEDULE : SCHEDULE;
@@ -113,6 +114,19 @@ export function planDay() {
   if (state.level >= 4) {
     // A mandatory training module, once a day.
     items.push({ kind: "training", minutes: TRAINING_TIME });
+  }
+  if (state.level >= 5) {
+    // One external partner a day: a teammate warns you in the morning, then
+    // the partner writes at noon asking about a topic. The topic is picked
+    // from the ones today's send requests aren't already using, so the
+    // partner's question never collides with a send task.
+    const partner = shuffle(PARTNERS)[0];
+    const teammate = shuffle(CONTACTS)[0];
+    const usedTopics = new Set(items.filter((i) => i.kind === "task").map((i) => i.topic.subject));
+    const freeTopics = TOPICS.filter((t) => !usedTopics.has(t.subject));
+    const topic = shuffle(freeTopics.length ? freeTopics : TOPICS)[0];
+    items.push({ kind: "headsUp", minutes: HEADS_UP_TIME, partner, teammate, topic });
+    items.push({ kind: "partnerQuestion", minutes: PARTNER_TIME, partner, topic });
   }
   items.sort((a, b) => a.minutes - b.minutes);
   state.plan = items;

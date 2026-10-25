@@ -144,6 +144,73 @@ export function deliverTraining() {
   renderAll();
 }
 
+/** A teammate warns you an external partner is about to write. No task —
+ *  just the heads-up, so the partner's email doesn't come out of nowhere. */
+export function deliverHeadsUp(item) {
+  const emailId = newId();
+  const first = item.teammate.name.split(" ")[0];
+  state.emails.unshift({
+    id: emailId,
+    threadId: emailId,
+    from: item.teammate,
+    subject: `Heads up: ${item.partner.name} will reach out today`,
+    body:
+      `Hi Alex,\n\nQuick heads-up: ${item.partner.name} from ${item.partner.company} ` +
+      `is going to email you today with some questions about the ${item.topic.subject}. ` +
+      `They're a legit external partner, so don't be thrown off when their email shows up ` +
+      `tagged [External Sender]. You'll want to reply to them directly with the details.\n\nThanks!\n${first}`,
+    minutes: state.minutes,
+    day: state.day,
+    read: false,
+    taskId: null,
+    kind: "headsUp",
+  });
+  toast(`📬 New email from ${item.teammate.name}`);
+  renderAll();
+}
+
+/** An external partner asks you a question. Tagged external like phishing,
+ *  but with no lure — replying to this email with the right details is the
+ *  task. */
+export function deliverPartnerQuestion(item) {
+  const emailId = newId();
+  const task = {
+    id: newId(),
+    type: "partner",
+    requester: item.partner,
+    target: item.partner,
+    targets: [item.partner],
+    targetsLabel: item.partner.name,
+    topic: item.topic.subject,
+    phrase: item.topic.phrase,
+    partnerEmailId: emailId,
+    done: false,
+    createdAt: state.minutes,
+    requestSubject: `Question about ${item.topic.subject}`,
+    emailId,
+    nagsSent: 0,
+  };
+  state.tasks.push(task);
+  const first = item.partner.name.split(" ")[0];
+  state.emails.unshift({
+    id: emailId,
+    threadId: emailId,
+    from: item.partner,
+    subject: `Question about ${item.topic.subject}`,
+    body:
+      `Hi Alex,\n\nI'm ${first} from ${item.partner.company}. I had a few questions ` +
+      `about the ${item.topic.subject} — could you fill me in on the details?\n\nThanks so much,\n${first}`,
+    minutes: state.minutes,
+    day: state.day,
+    read: false,
+    taskId: task.id,
+    kind: "partner",
+    external: true, // tagged, but legit: no lure, no phishing fine
+  });
+  toast(`📬 New email from ${item.partner.name}`);
+  renderAll();
+}
+
 function fill(template, task) {
   return template
     .replaceAll("{target}", task.targetsLabel || task.target.name)
@@ -177,11 +244,12 @@ export function deliverFollowup(task, stage) {
 }
 
 /** Send any follow-ups whose time has come for still-open tasks.
- *  Training tasks don't nag — the module email itself is the reminder,
- *  and the email-flavored follow-up templates don't fit a training. */
+ *  Training and partner tasks don't nag — the module email and the
+ *  partner's question are the reminders, and the email-flavored
+ *  follow-up templates don't fit either of them. */
 export function checkFollowups() {
   for (const task of state.tasks) {
-    if (task.done || task.type === "training") continue;
+    if (task.done || task.type === "training" || task.type === "partner") continue;
     while (
       task.nagsSent < FOLLOWUP_STAGES.length &&
       state.minutes - task.createdAt >= FOLLOWUP_STAGES[task.nagsSent].after

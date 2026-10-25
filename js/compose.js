@@ -3,7 +3,9 @@
 // body phrase by phrase (greeting → small talk → main point → closing).
 // Sending completes a task when the recipient set, subject, and main phrase
 // all match an open task — or, in forward mode, when the forwarded email is
-// the info someone asked for and they are among the recipients.
+// the info someone asked for and they are among the recipients — or, in
+// reply mode, when the reply answers a partner's question with the right
+// main phrase and is still addressed to them.
 import { state, draft, newId } from "./state.js";
 import { CONTACTS, TOPICS, DISTRACTOR_PHRASES, ABSURD_TOPICS, SMALL_TALK, CLOSINGS, SIGNATURE, TASK_PAY } from "./data.js";
 import { $, esc, shuffle } from "./utils.js";
@@ -30,7 +32,8 @@ const SLOTS = [
  * slots are padded with decoys — sensible topics, bland filler, and
  * outright absurd ones. Subjects pad to five; main phrases stay at three.
  * (Forward tasks complete via Forward and trainings via the training module,
- * so neither is offered here.)
+ * so neither is offered here — but partner tasks' phrases ARE offered, since
+ * a reply's main phrase is how a partner task is answered.)
  */
 export function buildComposeOptions() {
   const open = state.tasks.filter((t) => !t.done && t.type === "send");
@@ -43,7 +46,10 @@ export function buildComposeOptions() {
     if (subjects.size >= 5) break;
     subjects.add(s);
   }
-  const phrases = new Set(open.map((t) => t.phrase));
+  const phrases = new Set([
+    ...open.map((t) => t.phrase),
+    ...state.tasks.filter((t) => !t.done && t.type === "partner").map((t) => t.phrase),
+  ]);
   const phrasePool = shuffle([
     ...DISTRACTOR_PHRASES,
     ...ABSURD_TOPICS.map((t) => t.phrase),
@@ -207,6 +213,19 @@ function matchTask() {
         recipientSet.has(t.requester.email)
     );
     if (fwd) return fwd;
+  }
+  if (draft.mode === "reply" && draft.replyTo) {
+    // A partner task completes only by replying to that partner's question
+    // email, still addressed to them, with the topic's canonical phrase.
+    const pt = state.tasks.find(
+      (t) =>
+        !t.done &&
+        t.type === "partner" &&
+        t.partnerEmailId === draft.replyTo.id &&
+        t.phrase === draft.slots.main &&
+        recipientSet.has(t.requester.email)
+    );
+    if (pt) return pt;
   }
   return state.tasks.find(
     (t) =>
