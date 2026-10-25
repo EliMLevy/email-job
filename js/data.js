@@ -112,11 +112,12 @@ export const SCHEDULE = [550, 600, 650, 700, 785, 840, 910, 960];
 export const DAY1_SCHEDULE = [600, 690, 790, 890];
 // --- Progression -----------------------------------------------------------
 // Level 1: email one person about a topic. Level 2: + group emails.
-// Level 3: + forward-the-information tasks.
-export const MAX_LEVEL = 3;
+// Level 3: + forward-the-information tasks. Level 4: + mandatory trainings.
+export const MAX_LEVEL = 4;
 export const NEXT_UNLOCK = {
   1: { name: "Group emails", blurb: "Requests will start asking you to email several people at once." },
   2: { name: "Forwarding information", blurb: "People will send you files and details — and later, someone else will ask you to forward them on." },
+  3: { name: "Mandatory trainings", blurb: "Each day brings a mandatory training module — a quick game you have to finish before 5 PM." },
 };
 
 // Information one person sends you, which someone else will later ask you
@@ -152,6 +153,22 @@ export const INFO_ITEMS = [
 
 export const FORWARD_REQUEST_SUBJECTS = ["Can you forward something?", "Quick forward?", "Need a favor — a forward"];
 export const FORWARD_REASONS = ["for the planning meeting", "before my performance review", "for my records", "for the client call"];
+
+// Delivery slots for forward requests. Every document the player owns gets
+// two requests a day, so the pool must cover all 5 INFO_ITEMS × 2.
+export const FORWARD_REQUEST_SLOTS = [640, 680, 720, 760, 800, 840, 880, 920, 960, 1000];
+
+// --- Mandatory trainings (level 4) ----------------------------------------
+// One training module a day, delivered as an email + a task. The module is a
+// tic-tac-toe game; win, lose, or draw all count as completed.
+export const TRAINING_TIME = 660; // 11:00 AM
+export const TRAINING_FROM = { name: "People Team", email: "people@company.com" };
+export const TRAINING_SUBJECT = "Mandatory Training: Complete by EOD";
+export const TRAINING_BODY =
+  "Hi Alex,\n\nThis is your mandatory training module for today. Please complete the " +
+  "tic-tac-toe exercise below before 5 PM — it doesn't matter whether you win or lose, " +
+  "but it does have to be finished.\n\nOpen this email and hit Start Training.\n\n— The People Team";
+export const TRAINING_MESSAGE = "Your performance in the training has been recorded for evaluations.";
 
 // ---------------------------------------------------------------------------
 // Inbox noise: emails that are NOT tasks.

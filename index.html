@@ -52,6 +52,7 @@
         <div class="read-actions">
           <button class="action-btn" id="replyBtn">↩ Reply</button>
           <button class="action-btn" id="forwardBtn">↪ Forward</button>
+          <button class="action-btn hidden" id="trainingBtn">▶ Start Training</button>
         </div>
         <div class="task-banner hidden" id="taskBanner"></div>
         <div class="read-body" id="readBody"></div>
@@ -118,6 +119,19 @@
         <button class="send-btn" id="moreBtn">I'm ready for more responsibility!</button>
         <button class="action-btn" id="stayBtn">I'd like to continue at my current level</button>
       </div>
+    </div>
+  </div>
+
+  <!-- Mandatory training module (level 4): tic-tac-toe -->
+  <div class="modal-backdrop hidden" id="trainingModal">
+    <div class="modal training-modal">
+      <h2>🎓 Mandatory Training</h2>
+      <p>Complete a game of tic-tac-toe against the computer. You're X — win, lose,
+      or draw, it just has to be finished.</p>
+      <p class="training-status" id="trainingStatus">Your move — you're X.</p>
+      <div class="ttt-grid" id="trainingGrid"></div>
+      <p class="training-result" id="trainingResult"></p>
+      <button class="send-btn" id="trainingClose">Back to inbox</button>
     </div>
   </div>
 

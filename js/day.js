@@ -2,11 +2,11 @@
 import { state, planDay } from "./state.js";
 import { DAY_START, DAY_END, TICK_MS, BASE_PAY, TASK_PAY, CITATION_FEE, PHISH_FINE, MAX_LEVEL, NEXT_UNLOCK } from "./data.js";
 import { $, esc } from "./utils.js";
-import { deliver, deliverInfo, deliverForwardRequest, checkFollowups, deliverNoise } from "./inbox.js";
+import { deliver, deliverInfo, deliverForwardRequest, deliverTraining, checkFollowups, deliverNoise } from "./inbox.js";
 import { renderHeader, renderAll } from "./views.js";
 import { closeCompose } from "./compose.js";
 
-const DELIVERERS = { task: deliver, info: deliverInfo, forwardRequest: deliverForwardRequest };
+const DELIVERERS = { task: deliver, info: deliverInfo, forwardRequest: deliverForwardRequest, training: deliverTraining };
 
 export function tick() {
   state.minutes++;
@@ -74,7 +74,9 @@ export function endDay() {
           .map((t) =>
             t.type === "forward"
               ? `<p class="citation">⚠️ Citation — did not forward “${esc(t.topic)}” to ${esc(t.requester.name)}.</p>`
-              : `<p class="citation">⚠️ Citation — did not email ${esc(t.targetsLabel)} about “${esc(t.topic)}” (requested by ${esc(t.requester.name)}).</p>`
+              : t.type === "training"
+                ? `<p class="citation">⚠️ Citation — did not complete the mandatory training.</p>`
+                : `<p class="citation">⚠️ Citation — did not email ${esc(t.targetsLabel)} about “${esc(t.topic)}” (requested by ${esc(t.requester.name)}).</p>`
           )
           .join("")
       : `<p class="all-clear" style="margin-top:14px">No outstanding tasks. A flawless day at the office. ☕</p>`);

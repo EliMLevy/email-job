@@ -169,6 +169,21 @@ button { font: inherit; cursor: pointer; }
 .modal-actions { display: flex; flex-direction: column; gap: 8px; }
 .modal-actions .action-btn { align-self: flex-start; }
 .info-box { display: inline-block; background: #e8f0fe; border: 1px solid #1a73e8; color: #174ea6; border-radius: 8px; padding: 8px 12px; font-size: 14px; font-weight: 600; }
+
+/* ---------- training module ---------- */
+.training-modal { text-align: center; }
+.training-status { font-weight: 600; }
+.training-result { color: #137333; font-weight: 600; min-height: 22px; }
+.ttt-grid {
+  display: grid; grid-template-columns: repeat(3, 72px); gap: 6px;
+  justify-content: center; margin: 8px 0;
+}
+.ttt-cell {
+  width: 72px; height: 72px; font-size: 34px; font-weight: 700; color: #202124;
+  background: #f2f6fc; border: 1px solid #dadce0; border-radius: 8px;
+}
+.ttt-cell:hover:not(:disabled) { background: #d3e3fd; }
+.ttt-cell:disabled { cursor: default; }
 .attachment-chip.static { cursor: default; }
 #toChips { display: contents; }
 .to-wrap { flex-wrap: wrap; gap: 4px; }

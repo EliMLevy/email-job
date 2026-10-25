@@ -32,6 +32,7 @@ python3 -m http.server 8000   # then open http://localhost:8000
 | `js/inbox.js` | Deliveries: a scheduled item becomes an email + an open task |
 | `js/compose.js` | The compose window: recipient autocomplete, subject picker, phrase-by-phrase body builder, send + task matching |
 | `js/day.js` | The clock, end-of-day pay/citations, next-day reset |
+| `js/training.js` | Mandatory training module: tic-tac-toe vs the computer |
 
 ## Progression
 
@@ -48,6 +49,13 @@ python3 -m http.server 8000   # then open http://localhost:8000
   2. **Forwarding information** — someone sends you a file or a detail (a PDF,
      a deadline, a code); later, someone else asks you to forward that email
      to them. Forwarding the right email to the requester completes the task.
+     Documents accumulate: one new document arrives each day, and every day
+     two different people ask for a forward of *each* document you own — so
+     the inbox gets busier with every document you collect.
+  3. **Mandatory trainings** — once a day, the People Team sends a training
+     module: a game of tic-tac-toe against the computer. Win, lose, or draw,
+     it just has to be finished before 5 PM, or it's a citation like any
+     other undone task.
 
 ## The loop
 

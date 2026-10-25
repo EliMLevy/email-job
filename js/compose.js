@@ -29,10 +29,11 @@ const SLOTS = [
  * Options always include every open send-task's topic/phrase; the remaining
  * slots are padded with decoys — sensible topics, bland filler, and
  * outright absurd ones. Subjects pad to five; main phrases stay at three.
- * (Forward tasks aren't offered here — they complete via Forward, not Compose.)
+ * (Forward tasks complete via Forward and trainings via the training module,
+ * so neither is offered here.)
  */
 export function buildComposeOptions() {
-  const open = state.tasks.filter((t) => !t.done && t.type !== "forward");
+  const open = state.tasks.filter((t) => !t.done && t.type === "send");
   const subjects = new Set(open.map((t) => t.topic));
   const subjectPool = shuffle([
     ...TOPICS.map((t) => t.subject),
@@ -210,7 +211,7 @@ function matchTask() {
   return state.tasks.find(
     (t) =>
       !t.done &&
-      t.type !== "forward" &&
+      t.type === "send" &&
       t.topic === draft.subjectTopic &&
       t.phrase === draft.slots.main &&
       t.targets.length === recipientSet.size &&

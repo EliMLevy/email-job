@@ -1,7 +1,7 @@
 // Inbox deliveries: a scheduled plan item becomes an email + an open task,
 // and an ignored task earns its requester's escalating follow-up emails.
 import { state, newId } from "./state.js";
-import { FOLLOWUP_STAGES, FORWARD_REQUEST_SUBJECTS } from "./data.js";
+import { FOLLOWUP_STAGES, FORWARD_REQUEST_SUBJECTS, TRAINING_FROM, TRAINING_SUBJECT, TRAINING_BODY } from "./data.js";
 import { joinNames } from "./utils.js";
 import { toast } from "./ui.js";
 import { renderAll } from "./views.js";
@@ -42,10 +42,17 @@ export function deliver(item) {
   renderAll();
 }
 
-/** Someone files information with you. Not a task — until someone asks for it. */
+/** Someone files information with you. Not a task — until someone asks for it.
+ *  The document joins the player's permanent collection, which is what
+ *  tomorrow's forward requests are built from. */
 export function deliverInfo(item) {
   const emailId = newId();
-  state.infoEmails[item.pairId] = emailId;
+  state.infoEmails[item.info.label] = emailId;
+  if (!state.ownedInfo.some((o) => o.info.label === item.info.label)) {
+    state.ownedInfo.push({ info: item.info, from: item.from, emailId });
+  } else {
+    state.ownedInfo.find((o) => o.info.label === item.info.label).emailId = emailId;
+  }
   state.emails.unshift({
     id: emailId,
     threadId: emailId,
@@ -63,7 +70,8 @@ export function deliverInfo(item) {
   renderAll();
 }
 
-/** A second person asks you to forward the info email on to them. */
+/** Someone asks you to forward a document you own on to them. The target
+ *  email is the original info email, wherever in the inbox it now lives. */
 export function deliverForwardRequest(item) {
   const emailId = newId();
   const task = {
@@ -75,7 +83,7 @@ export function deliverForwardRequest(item) {
     targetsLabel: item.requester.name,
     topic: item.info.label,
     phrase: null,
-    infoEmailId: state.infoEmails[item.pairId] ?? null,
+    infoEmailId: state.infoEmails[item.docLabel] ?? null,
     done: false,
     createdAt: state.minutes,
     requestSubject: FORWARD_REQUEST_SUBJECTS[0],
@@ -98,6 +106,41 @@ export function deliverForwardRequest(item) {
     taskId: task.id,
   });
   toast(`📬 New email from ${item.requester.name}`);
+  renderAll();
+}
+
+/** Today's mandatory training module arrives as an email and a task. */
+export function deliverTraining() {
+  const emailId = newId();
+  const task = {
+    id: newId(),
+    type: "training",
+    requester: TRAINING_FROM,
+    target: TRAINING_FROM,
+    targets: [TRAINING_FROM],
+    targetsLabel: "Mandatory Training",
+    topic: "Mandatory Training",
+    phrase: null,
+    done: false,
+    createdAt: state.minutes,
+    requestSubject: TRAINING_SUBJECT,
+    emailId,
+    nagsSent: 0,
+  };
+  state.tasks.push(task);
+  state.emails.unshift({
+    id: emailId,
+    threadId: emailId,
+    from: TRAINING_FROM,
+    subject: TRAINING_SUBJECT,
+    body: TRAINING_BODY,
+    minutes: state.minutes,
+    day: state.day,
+    read: false,
+    taskId: task.id,
+    kind: "training",
+  });
+  toast(`📬 New email from ${TRAINING_FROM.name}`);
   renderAll();
 }
 
@@ -133,10 +176,12 @@ export function deliverFollowup(task, stage) {
   renderAll();
 }
 
-/** Send any follow-ups whose time has come for still-open tasks. */
+/** Send any follow-ups whose time has come for still-open tasks.
+ *  Training tasks don't nag — the module email itself is the reminder,
+ *  and the email-flavored follow-up templates don't fit a training. */
 export function checkFollowups() {
   for (const task of state.tasks) {
-    if (task.done) continue;
+    if (task.done || task.type === "training") continue;
     while (
       task.nagsSent < FOLLOWUP_STAGES.length &&
       state.minutes - task.createdAt >= FOLLOWUP_STAGES[task.nagsSent].after

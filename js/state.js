@@ -3,7 +3,8 @@
 import {
   CONTACTS, TOPICS, REQUEST_SUBJECTS, FLAVOR, SCHEDULE, DAY1_SCHEDULE, DAY_START,
   PHISH_EMAILS, HI_EMAILS, ANNOUNCEMENTS, NOISE_SCHEDULE,
-  INFO_ITEMS, FORWARD_REASONS, INTRO_EMAILS, INTRO_SCHEDULE_DAY1,
+  INFO_ITEMS, FORWARD_REASONS, FORWARD_REQUEST_SLOTS, INTRO_EMAILS, INTRO_SCHEDULE_DAY1,
+  TRAINING_TIME,
 } from "./data.js";
 import { shuffle } from "./utils.js";
 
@@ -22,7 +23,11 @@ export const state = {
   plan: [],
   noise: [],
   phishClicks: 0,
-  infoEmails: {}, // pairId -> id of the delivered info email (forward tasks)
+  // Documents the player has been given, kept across days: each entry is
+  // { info, from, emailId }. Forward requests are built from this list, so
+  // the inbox gets busier with every document collected.
+  ownedInfo: [],
+  infoEmails: {}, // info label -> id of the delivered info email (forward tasks)
   emails: [],
   sent: [],
   tasks: [],
@@ -46,7 +51,9 @@ export const draft = {
 
 /**
  * Build today's delivery schedule. Day 1 is lighter and slower; group tasks
- * join at level 2; an info drop + forward request pair joins at level 3.
+ * join at level 2; at level 3 a new info document drops daily and every
+ * owned document draws two forward requests; at level 4 a training module
+ * joins as well.
  */
 export function planDay() {
   const schedule = state.day === 1 ? DAY1_SCHEDULE : SCHEDULE;
@@ -74,24 +81,41 @@ export function planDay() {
     }
   }
   if (state.level >= 3) {
-    // An info drop early, then a different person asks you to forward it.
-    const info = shuffle(INFO_ITEMS)[0];
-    const [from, requester] = shuffle(CONTACTS);
-    const pairId = `pair-day${state.day}`;
-    items.push({ kind: "info", minutes: 615, pairId, info, from });
-    items.push({
-      kind: "forwardRequest",
-      minutes: 675,
-      pairId,
-      info,
-      from, // who sent the info (named in the request email)
-      requester,
-      reason: shuffle(FORWARD_REASONS)[0],
-    });
+    // One new document a day (until the pool runs out), dropped at 10:15.
+    // Then, for EVERY document the player owns — old ones included — two
+    // different people ask for a forward. Each new document therefore adds
+    // two more forward requests to every day after it arrives.
+    const ownedLabels = new Set(state.ownedInfo.map((o) => o.info.label));
+    const unowned = INFO_ITEMS.filter((i) => !ownedLabels.has(i.label));
+    const plannedDocs = state.ownedInfo.map((o) => ({ info: o.info, from: o.from }));
+    if (unowned.length) {
+      const info = shuffle(unowned)[0];
+      const from = shuffle(CONTACTS)[0];
+      items.push({ kind: "info", minutes: 615, info, from });
+      plannedDocs.push({ info, from });
+    }
+    let slot = 0;
+    for (const doc of plannedDocs) {
+      const pool = shuffle(CONTACTS.filter((c) => c.email !== doc.from.email));
+      for (const requester of pool.slice(0, 2)) {
+        items.push({
+          kind: "forwardRequest",
+          minutes: FORWARD_REQUEST_SLOTS[slot++],
+          docLabel: doc.info.label,
+          info: doc.info,
+          from: doc.from, // who sent the info (named in the request email)
+          requester,
+          reason: shuffle(FORWARD_REASONS)[0],
+        });
+      }
+    }
+  }
+  if (state.level >= 4) {
+    // A mandatory training module, once a day.
+    items.push({ kind: "training", minutes: TRAINING_TIME });
   }
   items.sort((a, b) => a.minutes - b.minutes);
   state.plan = items;
-  state.infoEmails = {};
   planNoise();
 }
 

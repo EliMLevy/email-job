@@ -97,11 +97,17 @@ export function openThread(email) {
       banner.innerHTML =
         task.type === "forward"
           ? `✅ Task completed: forwarded “${esc(task.topic)}” to ${esc(task.requester.name)}.`
-          : `✅ Task completed: email ${esc(task.targetsLabel)} about “${esc(task.topic)}”.`;
+          : task.type === "training"
+            ? `✅ Task completed: mandatory training finished.`
+            : `✅ Task completed: email ${esc(task.targetsLabel)} about “${esc(task.topic)}”.`;
     } else if (task.type === "forward") {
       banner.innerHTML =
         `📌 <strong>Task:</strong> Forward the <strong>“${esc(task.topic)}”</strong> email to ` +
         `<strong>${esc(task.requester.name)}</strong> before 5 PM. (Open that email and hit Forward.)`;
+    } else if (task.type === "training") {
+      banner.innerHTML =
+        `📌 <strong>Task:</strong> Complete the mandatory training before 5 PM. ` +
+        `(Hit Start Training below — win, lose, or draw, it just has to be finished.)`;
     } else {
       banner.innerHTML =
         `📌 <strong>Task:</strong> Email <strong>${esc(task.targetsLabel)}</strong> about ` +
@@ -110,6 +116,8 @@ export function openThread(email) {
   } else {
     banner.classList.add("hidden");
   }
+  // The Start Training button only belongs on an open training email.
+  $("trainingBtn").classList.toggle("hidden", !(task && task.type === "training" && !task.done));
   renderThreadReplies(thread.slice(1));
   renderSidebar();
 }

@@ -7,10 +7,12 @@ import { $ } from "./utils.js";
 import { renderAll, initViews } from "./views.js";
 import { initCompose, openReply, openForward } from "./compose.js";
 import { startTimer, initDay } from "./day.js";
+import { initTraining } from "./training.js";
 
 initViews();
 initCompose();
 initDay();
+initTraining();
 
 // Reply / Forward act on whichever email is open in the reading view.
 $("replyBtn").addEventListener("click", () => {
