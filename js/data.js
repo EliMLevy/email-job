@@ -115,6 +115,9 @@ export const DAY1_SCHEDULE = [600, 690, 790, 890];
 // Level 3: + forward-the-information tasks. Level 4: + mandatory trainings.
 // Level 5: + external partners asking questions (reply with the details).
 export const MAX_LEVEL = 5;
+// Endings: finishing day ENDING_DAY ends the run with the shutdown ending.
+export const ENDING_DAY = 10;
+export const ENDINGS = [{ id: "shutdown", name: "Company Shutdown" }];
 export const NEXT_UNLOCK = {
   1: { name: "Group emails", blurb: "Requests will start asking you to email several people at once." },
   2: { name: "Forwarding information", blurb: "People will send you files and details — and later, someone else will ask you to forward them on." },

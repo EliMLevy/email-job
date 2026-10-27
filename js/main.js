@@ -8,6 +8,7 @@ import { renderAll, initViews } from "./views.js";
 import { initCompose, openReply, openForward } from "./compose.js";
 import { startTimer, initDay } from "./day.js";
 import { initTraining } from "./training.js";
+import { renderMenu } from "./endings.js";
 
 initViews();
 initCompose();
@@ -24,9 +25,10 @@ $("forwardBtn").addEventListener("click", () => {
 
 planDay();
 renderAll();
-// The clock doesn't start until the welcome dialog is dismissed.
-$("welcomeBtn").addEventListener("click", () => {
-  $("welcomeModal").classList.add("hidden");
+renderMenu();
+// The clock doesn't start until Start is hit on the menu screen.
+$("startBtn").addEventListener("click", () => {
+  $("menuModal").classList.add("hidden");
   state.begun = true;
   if (!state.paused) startTimer();
 });

@@ -31,12 +31,16 @@ python3 -m http.server 8000   # then open http://localhost:8000
 | `js/views.js` | Rendering (header, sidebar, list, reading view) + list navigation wiring |
 | `js/inbox.js` | Deliveries: a scheduled item becomes an email + an open task |
 | `js/compose.js` | The compose window: recipient autocomplete, subject picker, phrase-by-phrase body builder, send + task matching |
-| `js/day.js` | The clock, end-of-day pay/citations, next-day reset |
+| `js/day.js` | The clock, end-of-day pay/citations, next-day reset, run ending |
+| `js/endings.js` | Endings reached (persisted in localStorage) and the menu screen |
 | `js/training.js` | Mandatory training module: tic-tac-toe vs the computer |
 
 ## Progression
 
-- **Day 1** opens with a welcome dialog. The team keeps requests to a
+- The game opens with a **menu screen**: a Start button, and how many
+  endings you have reached (persisted across loads, even though a run
+  itself is not saved yet).
+- **Day 1** opens with a lighter schedule. The team keeps requests to a
   minimum: 4 task emails on a slower schedule — while all 8 teammates send
   personal introduction emails across the day, plus one phishing scam and
   one announcement.
@@ -84,6 +88,10 @@ python3 -m http.server 8000   # then open http://localhost:8000
   stacked below it, oldest first.
 - Completing a task pays **+$40**; each task still open at 5 PM is a citation, **−$30**.
 - Daily pay is $250 base + bonuses − citations (floored at $0); your balance carries across days.
+- **Ending:** making it through day 10 ends the run — the end-of-day dialog
+  says you did a great job, but the company went out of business and you
+  are once again jobless. That unlocks the one ending so far ("Company
+  Shutdown"), shown on the menu screen; "Back to menu" starts a fresh run.
 
 To add content, edit `js/data.js`: a new topic needs a subject and the one
 "correct" main phrase; new coworkers go in `CONTACTS`. Everything else adapts.

@@ -160,6 +160,8 @@ button { font: inherit; cursor: pointer; }
 .modal .citation { color: #b3261e; font-size: 14px; margin: 4px 0; }
 .modal .all-clear { color: #137333; font-size: 14px; }
 .modal .send-btn { margin-top: 16px; }
+.menu-endings { margin-top: 14px; font-size: 13.5px; color: #5f6368; }
+.ending-message { font-weight: 700; }
 .modal p { font-size: 14.5px; line-height: 1.55; }
 .unlock-note { margin: 16px 0 0; padding: 10px 12px; background: #e8f0fe; border-radius: 8px; }
 .modal-actions { display: flex; flex-direction: column; gap: 8px; }
